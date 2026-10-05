@@ -60,6 +60,10 @@ done
 cmp "$PKG" /tmp/_verify_pkg.tbz
 echo "[3/4] 服务端字节一致 OK"
 
+# 3.5) 刷新 jsDelivr CDN 缓存（线上拉包走 jsDelivr，默认缓存 12h）
+curl -s --max-time 30 "https://purge.jsdelivr.net/gh/${REPO}@main/${PKG}" >/dev/null 2>&1 || true
+echo "[3.5] jsDelivr 缓存已刷新"
+
 # 4) 最终验收：下载回来的包直接跑回归
 rm -rf /tmp/_pub_v && mkdir /tmp/_pub_v && tar xjf /tmp/_verify_pkg.tbz -C /tmp/_pub_v
 if [ -f test_combo.py ]; then
