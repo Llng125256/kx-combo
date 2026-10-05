@@ -1,0 +1,38 @@
+# ====================================================================== #
+# K线导演·组合信号监控 配置（独立任务）
+# 组合口径（v1.6，2026-09-27）：
+#   haos强 + Lucy买入  /  haos弱 + Lucy买入（同标的同时满足只推强）
+#   间隔（haos↔Lucy）≤ 10 天；新鲜度（较晚信号距真实时间）≤ 16 天（v1.6 10→16，Lucy 提取窗口联动）
+# ====================================================================== #
+
+notify:
+  channels: ["wecom"]
+  wecom:
+    webhook: ""            # 空 = 走环境变量 KX_WECHAT_WEBHOOK（任务 prompt 里 export）
+
+ntfy:
+  channel: "kx-mon-v3-7f3a9c2e"     # 与主监控同频道，title 独立
+  state_title: "kx-combo-state-v1"
+  pushlog_title: "kx-combo-push-log"  # 【v1.2】每轮推送内容落盘，可回查
+
+watch:
+  markets: ["futures"]
+  underlying_types: ["EQUITY"]       # 只美股，与主监控同池
+  # 【2026-09-27 用户拍板：全部放开】原 52 个排除标清空，所有 EQUITY 标的全部纳入扫描。
+  # 原 exclude_symbols 52 标（2026-09-27 前的名单，留档备回滚）：
+  #   MUU/ALAB/CRWD/DKNG/FWDI/GS/IWM/RIVN/CSCO/PENG/SPY/STRC/JPM/EWY/EWT/EWZ/HIMS/KORU/
+  #   KSTR/LLY/MRK/MVLL/NVDL/NVO/QQQ/RAM/RKLB/SKDD/SKUU/SOXS/SOXL/SQQQ/TBT/TEM/TMF/TQQQ/
+  #   TSLL/TZA/UBER/UVXY（通用删除）+ MDB(09-12) + AGPU/AMC/ANET/APLD/CYPH/HUT/PATH(09-21 K线拉取为空)
+  exclude_symbols: []
+  max_signal_age_days: 16      # Lucy 箭头新鲜窗口（2026-09-27 用户拍板 10→16，与组合新鲜度联动）
+  gap_haos_lucy_days: 10       # ★ 组合：haos强 ↔ Lucy 间隔上限（v1.4 用户拍板 7→10，+3天）
+  combo_fresh_days: 16         # ★ 新鲜度门控：较晚信号距真实时间上限（2026-09-27 用户拍板 10→16）
+  # ---- 防抖/防幽灵/防僵尸（与主监控同款口径）----
+  freeze_max_rounds: 3         # 连续 3 轮读数不稳 → 强制裁定
+  freeze_hard_ceiling: 0       # 0 = 自动（freeze_max_rounds×4，不低于 192 轮）
+  min_scan_success_ratio: 0.5  # 整轮健康度护栏阈值（主监控同款）
+  round_health_guard: true
+  scan_workers: 16
+
+run:
+  kline_limit: 300             # ★ 用户指定：limit=300 口径
