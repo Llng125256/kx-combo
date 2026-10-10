@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>K线复刻监控</title><style>body{background:#111;color:#eee;font-family:Menlo,Consolas,monospace;white-space:pre;padding:12px;font-size:13px;line-height:1.5}</style></head>
+<body><div id="c">加载中…</div><script>
+function pad(n){return (n<10?'0':'')+n}
+(function(){
+  var now = new Date(Date.now() + 8*3600*1000);
+  var urls = [];
+  for (var off = 0; off <= 1; off++){
+    var d = new Date(now.getTime() - off*86400000);
+    var key = 'daily-' + pad(d.getMonth()+1) + pad(d.getDate()) + '-';
+    [ '2330','1730','1130','0530' ].forEach(function(s){ urls.push(key + s + '.txt'); });
+  }
+  var i = 0;
+  function next(){
+    if (i >= urls.length){ document.getElementById('c').textContent = '今天还没有更新，请稍后再试'; return; }
+    var u = urls[i++];
+    fetch(u).then(function(r){ if(!r.ok) throw 0; return r.text(); })
+      .then(function(t){ document.getElementById('c').textContent = t; })
+      .catch(next);
+  }
+  next();
+})();
+</script></body></html>
