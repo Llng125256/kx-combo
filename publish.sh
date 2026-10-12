@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 PKG="_pkg_combo.tar.bz2"
-FILES=(config.yaml kx_client.py monitor_combo.py notifier.py requirements.txt)
+FILES=(config.yaml kx_client.py monitor_combo.py notifier.py requirements.txt replica_monitor.py archive_daily.py)
 REPO="Llng125256/kx-combo"
 RAW="https://raw.githubusercontent.com/${REPO}/main/${PKG}"
 TOKEN_FILE="/root/.gt"          # device-flow 令牌（scope=repo），勿外传勿提交
