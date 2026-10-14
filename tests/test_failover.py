@@ -108,7 +108,7 @@ check("F7 当日缓存命中不发请求", c2.s3_calls == n1 and d2['bars'] == d
 sys.path.insert(0, '/tmp/kxhandover/pkg')
 import replica_monitor as rm
 
-sig, cands, tdays, lc, dset = rm.analyse("XUSDT", d['bars'], None)
+sig, cands, tdays, lc, dset, _sbd = rm.analyse("XUSDT", d['bars'], None)
 check("F2 引擎消费S3 bars(额外source字段不炸)", True,
       f"展示信号={'有' if sig else '无'} 候选={len(cands)}")
 check("F3a 缺今日bar容忍:最后bar=昨日完整bar", d['bars'][-1]['time'][:10] == yesterday.isoformat(),
