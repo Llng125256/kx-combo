@@ -51,7 +51,7 @@ for j, (o, h, l, c, v) in {i+1: (93, 93.5, 79, 80, 3000),    # 周六 瘫脚深�
                            i+3: (74, 75, 70, 71, 1000),      # 周一
                            i+4: (71, 72, 70, 71, 1000)}.items():
     bars[j] = dict(bars[j], open=o, high=h, low=l, close=c, volume=v)
-latest, cands, tdays, lc, dset = rm.analyse('T1A', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('T1A', bars, None)
 fri_gone = latest is None or latest['day'] != '2026-10-02'
 fri_exit = any(c['day'] == '2026-10-02' and c.get('exit_day') is not None
                and '破位' in (c.get('reason') or '') for c in cands)
@@ -66,7 +66,7 @@ for j, (o, h, l, c, v) in {i+1: (88.0, 88.0, 84.0, 84.2, 1200),   # 周六 确�
                            i+2: (91.0, 99.0, 84.0, 98.5, 2000),   # 周日 收上信号区上沿+大下影
                            i+3: (99.5, 100.2, 99.0, 99.8, 1000)}.items():
     bars[j] = dict(bars[j], open=o, high=h, low=l, close=c, volume=v)
-latest, cands, tdays, lc, dset = rm.analyse('T1B', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('T1B', bars, None)
 check('T1b 周六确认破位→周日收上信号区上沿→收复复活', latest is not None and '已收复' in latest.get('note', ''),
       f"note={latest.get('note') if latest else None} warn={latest.get('warn') if latest else None}")
 check('T1b 复活后无破位警告', latest is not None and '破位' not in (latest.get('warn') or ''))
@@ -76,7 +76,7 @@ bars, dates = make_bars()
 i = idx_of(dates, '2026-10-03')            # 周六
 sig_bar(bars, i)
 bars[i+1] = dict(bars[i+1], open=94.2, high=95, low=93.8, close=94.5, volume=1000)
-latest, cands, tdays, lc, dset = rm.analyse('T2', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('T2', bars, None)
 check('T2 周六信号不出示', latest is None)
 check('T2 周六候选不入账本', all(c['day'] != '2026-10-03' for c in cands))
 check('T2 周六触及仍计入市况统计(touch_days)', '2026-10-03' in tdays)
@@ -86,7 +86,7 @@ bars, dates = make_bars()
 i = idx_of(dates, '2026-10-04')            # 周日
 sig_bar(bars, i)
 bars[i+1] = dict(bars[i+1], open=94.2, high=95, low=93.8, close=94.5, volume=1000)
-latest, cands, tdays, lc, dset = rm.analyse('T3', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('T3', bars, None)
 check('T3 周日信号正常出示', latest is not None and latest['day'] == '2026-10-04')
 check('T3 卡片标注周日降权', latest is not None and '周日信号·权重0.5' in latest.get('note', ''))
 import numpy as np
@@ -130,7 +130,7 @@ from kx_client import KxClient
 cli = KxClient()
 d = cli.get_kline('LRCXUSDT', 'futures', '1d', 300)
 lb = d.get('bars') or []
-latest, cands, tdays, lc, dset = rm.analyse('LRCXUSDT', lb, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('LRCXUSDT', lb, None)
 check('T5 LRCX 展示信号仍为 10-07(周三) 且带破位观察',
       latest is not None and latest['day'] == '2026-10-07' and '破位' in (latest.get('warn') or ''))
 check('T5 LRCX 有效止损字段存在且低于显示止损',
@@ -149,7 +149,7 @@ for sym in ['LRCXUSDT', 'CXMTUSDT', 'DRAMUSDT', 'KORUUSDT']:
         if len(b) < 40:
             continue
         lo_sig, lo_c, _, _, _ = rm_old.analyse(sym, b, None)
-        ne_sig, ne_c, _, _, _ = rm.analyse(sym, b, None)
+        ne_sig, ne_c, _, _, _, _ = rm.analyse(sym, b, None)
         old_days = {c['day'] for c in lo_c}
         new_days = {c['day'] for c in ne_c}
         removed = old_days - new_days
