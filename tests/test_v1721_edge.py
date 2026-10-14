@@ -58,7 +58,7 @@ for k in range(CW + 1, N):   # 尾段 TAIL：不触✅/不破位 → 让硬顶�
     bars[k] = dict(bars[k], **TAIL)
 sig_bar(bars, CW)            # 2026-09-08 周二，恰在扫描窗边界
 D = dates_of(bars)
-latest_a, cands_a, tdays_a, _, _ = rm.analyse('E1A', bars, None)
+latest_a, cands_a, tdays_a, _, _, _ = rm.analyse('E1A', bars, None)
 c_a = next((c for c in cands_a if c['day'] == D[CW]), None)
 ok_a = (c_a is not None and c_a.get('reason') == '硬顶'
         and c_a.get('exit_day') == CW + rm.HARD_CAP and c_a.get('exit_date') == D[CW + rm.HARD_CAP]
@@ -72,7 +72,7 @@ check('E1a 信号恰在扫描窗边界(i0=cand_win=25)→准入且硬顶退出(j
 # ================= E1b: 信号在扫描窗外 1 根 i0 = cand_win − 1 =================
 bars = make_bars(n=N)
 sig_bar(bars, CW - 1)        # 2026-09-07 周一，窗外 1 根（排除原因只能是窗口，非周六）
-latest_b, cands_b, tdays_b, _, _ = rm.analyse('E1B', bars, None)
+latest_b, cands_b, tdays_b, _, _, _ = rm.analyse('E1B', bars, None)
 ok_b = (len(cands_b) == 0 and latest_b is None and D[CW - 1] not in tdays_b
         and rm._wd(D[CW - 1]) == 0)
 check('E1b 信号在扫描窗外1根(i0=cand_win−1=24)→不准入(无候选/无展示/touch_days不计)',
@@ -107,7 +107,7 @@ def e1c_bars():
 
 
 D3 = dates_of(e1c_bars())
-latest_c, cands_c, _, _, _ = rm.analyse('S10C', e1c_bars(), None)
+latest_c, cands_c, _, _, _, _ = rm.analyse('S10C', e1c_bars(), None)
 c_old = next((c for c in cands_c if c['day'] == D3[I_OLD]), None)
 c_new = next((c for c in cands_c if c['day'] == D3[I_NEW]), None)
 ok_pre = (c_old is not None and c_old.get('reason') == '硬顶' and c_old.get('exit_date') == D3[I_OLD + 30]
