@@ -72,7 +72,7 @@ I_FRI = 49   # 2026-10-02 周五（起始 2026-08-14）
 # ---------- S1: 周五主信号→🥈出卡，stop_eff 精确=止损−0.3×ATR ----------
 bars = make_bars()
 set_bar(bars, I_FRI, 100, 100.5, 88, 94, 5000)
-latest, cands, tdays, lc, dset = rm.analyse('S1', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S1', bars, None)
 exp_eff = round(88.0 - 0.3 * atr_at(bars, I_FRI), 2)
 ok1 = (latest is not None and latest['day'] == '2026-10-02' and latest['grade'] == '🥈'
        and bool(latest.get('main')) and latest.get('stop_eff') == exp_eff
@@ -83,7 +83,7 @@ check('S1 周五主信号🥈出卡+stop_eff=止损−0.3×ATR', ok1,
 # ---------- S2: 周六触轨（合格形态）→无卡、touch_days 仍计 ----------
 bars = make_bars()
 set_bar(bars, 50, 100, 100.5, 88, 94, 5000)   # 2026-10-03 周六
-latest, cands, tdays, lc, dset = rm.analyse('S2', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S2', bars, None)
 ok2 = (latest is None and '2026-10-03' in tdays
        and all(c['day'] != '2026-10-03' for c in cands))
 check('S2 周六触轨→无卡+候选不入账+touch_days仍计', ok2,
@@ -93,7 +93,7 @@ check('S2 周六触轨→无卡+候选不入账+touch_days仍计', ok2,
 bars = make_bars()
 set_bar(bars, 51, 100, 100.5, 88, 94, 5000)   # 2026-10-04 周日
 set_bar(bars, 52, 94.2, 95, 93.8, 94.5, 1000)
-latest, cands, tdays, lc, dset = rm.analyse('S3', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S3', bars, None)
 s_sun = rm.score_of('🥈', '常规', '无', '2026-10-04')
 s_norm = rm.score_of('🥈', '常规', '无', '2026-10-02')
 ok3 = (latest is not None and latest['day'] == '2026-10-04'
@@ -105,7 +105,7 @@ check('S3 周日出卡+sun_half=True+score_of减半', ok3,
 # ---------- S4: 下影≤40% 深CCI触轨→·（深度标签删除回归，无🥇） ----------
 bars = make_bars()
 set_bar(bars, I_FRI, 90, 95, 88, 94, 5000)   # cp=0.857>0.3, shadow=0.286≤0.4, CCI深
-latest, cands, tdays, lc, dset = rm.analyse('S4', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S4', bars, None)
 ok4 = (latest is not None and latest['grade'] == '·' and not latest.get('main')
        and latest.get('cci', 0) <= -175 and '🥇' not in str(latest.get('grade'))
        and '深度' not in str(latest))
@@ -115,7 +115,7 @@ check('S4 下影≤40%深CCI触轨→·无卡(深度标签删除回归)', ok4,
 # ---------- S5: CCI≤−175+下影>40%→🥈（非🥇） ----------
 bars = make_bars()
 set_bar(bars, I_FRI, 100, 100.5, 88, 94, 5000)   # shadow=0.48>0.4, CCI≈-500
-latest, cands, tdays, lc, dset = rm.analyse('S5', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S5', bars, None)
 ok5 = (latest is not None and latest['grade'] == '🥈' and bool(latest.get('main'))
        and latest.get('cci', 0) <= -175 and '🥇' not in str(latest.get('grade')))
 check('S5 CCI≤−175+下影>40%→🥈非🥇', ok5,
@@ -126,7 +126,7 @@ bars = make_bars()
 set_bar(bars, I_FRI, 100, 100.5, 88, 94, 5000)
 set_bar(bars, I_FRI + 1, 88.0, 88.0, 84.0, 84.2, 1200)    # 周六 确认破位(瘫脚)
 set_bar(bars, I_FRI + 2, 91.0, 99.0, 84.0, 98.5, 2000)    # 周日 收上信号区上沿
-latest, cands, tdays, lc, dset = rm.analyse('S6', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S6', bars, None)
 ok6 = latest is not None and '已收复' in latest.get('note', '') and '破位' not in (latest.get('warn') or '')
 check('S6 确认破位→周日收上EMA10−ATR→复活(note含已收复)', ok6,
       f"note={latest.get('note') if latest else None}")
@@ -138,7 +138,7 @@ set_bar(bars, I_FRI + 1, 93, 93.5, 79, 80, 3000)    # 周六 确认破位
 set_bar(bars, I_FRI + 2, 80, 81, 73, 74, 2500)      # 周日
 set_bar(bars, I_FRI + 3, 74, 75, 70, 71, 1000)      # 周一 (观察期第2日)
 set_bar(bars, I_FRI + 4, 71, 72, 70, 71, 1000)      # 周二 期满→离场
-latest, cands, tdays, lc, dset = rm.analyse('S7', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S7', bars, None)
 c7 = next((c for c in cands if c['day'] == '2026-10-02'), None)
 ok7 = ((latest is None or latest['day'] != '2026-10-02')
        and c7 is not None and '破位止损' in (c7.get('reason') or '')
@@ -149,7 +149,7 @@ check('S7 破位观察期满→⚠️破位止损离场(展示卡出清)', ok7,
 # ---------- S8: 信号后 31 天无事件→硬顶 30 天强制退出 ----------
 bars = make_bars(n=85, tail_from=50)          # v1.7.21: cand_win=25≤49 准入；需 n≥i0+31 才能触发硬顶（原 79 根数据不足，属测试构造缺陷）
 set_bar(bars, I_FRI, 100, 100.5, 88, 94, 5000)
-latest, cands, tdays, lc, dset = rm.analyse('S8', bars, None)
+latest, cands, tdays, lc, dset, _sbd = rm.analyse('S8', bars, None)
 c8 = next((c for c in cands if c['day'] == '2026-10-02'), None)
 hit8 = c8 is not None and c8.get('reason') == '硬顶'
 # 对照组：绕过 analyse 窗口门，直接调用 _simulate 验证机制本身
@@ -204,7 +204,7 @@ class FakeClient:
         return {'bars': BARS_MAP[sym]}
 
 
-_, c10, _, _, _ = rm.analyse('S10', s10, None)
+_, c10, _, _, _, _ = rm.analyse('S10', s10, None)
 both_days = {'2026-10-02', '2026-10-05'} <= {c['day'] for c in c10}
 cap = {}
 _orig_render = rm.render_html
