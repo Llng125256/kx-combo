@@ -89,7 +89,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kx_client import KxClient  # noqa: E402
 
 RED_TXT = "右偏型趋势跟随系统:进场→按趋势持有→严格纪律出场。约46%交易会被止损打掉(平均-7.66%)=必然的数学结果,不是系统坏了;利润来自拿得住的右尾(30天硬顶+32%/趋势终结+11%)。不敢扛浮亏/手动干预止损=不该用本系统。月月盈利、回撤浅、胜率高=任何真实交易系统都不可达(顶级CTA同样有深回撤,趋势策略胜率普遍不到45%),稳定的印钞机这个标准更是不存在"
-__version__ = "1.7.33"    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
+__version__ = "1.7.34"    # v1.7.34: 破位观察期深破加速线+保险丝无条件生效（用户拍板2026-10-15，13512事件分桶数据背书，spec=verdict_v6_bombardment.md§7）：①观察期内收盘<显示止损−1.5×ATR→立即离场(⛔深破加速止损)不等期满 ②保险丝(锚×0.8)收盘触及无条件生效(⛔保险丝)——修复ASTS穿丝仍干等漏洞。展示机同步brk_expire结局。判定依据=深破桶697笔(2天制-1.45%≈d1.5-1.52%打平，缩短持刀时间)    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
 GH_API = "https://api.github.com/repos/Llng125256/kx-combo/contents"
 FRESH_DAYS = 15
 HARD_CAP = 30            # 信号/模拟仓硬顶（天）——v1.7.19 回撤（D-Audit v1.0 扛单指纹双期坐实：30天窗 60.8%/+1.74% vs 60天窗 52.5%/+0.25%，30-60天龄陈旧信号为负贡献；用户拍板 2026-10-13）
@@ -207,11 +207,15 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
     到站三条件 > 保本 > 🏁趋势终结 > 硬顶(HARD_CAP, 自信号日 i0 起算)。
     返回 (exit_day, exit_px, reason)。"""
     rec_line = dead if rec_ref is None else rec_ref   # v1.7.14: 收复参考线
+    fuse_px = anchor*0.8 if anchor is not None else None   # v1.7.34: 保险丝=锚×0.8
     exit_day, exit_px, reason = None, None, '在仓'
     hold, pend, cnt2 = False, 0, 0
     st_j, brk_j = 'live', None
     for j in range(ei, n):
         if np.isnan(atr[j]) or np.isnan(cci[j]): continue
+        if fuse_px is not None and close[j] <= fuse_px:   # v1.7.34: 保险丝收盘触及无条件离场
+            exit_day, exit_px, reason = j, close[j], '⛔保险丝'
+            break
         pen = stop - close[j]
         if pen > 0.3*atr[j]:
             rng_j = high[j]-low[j]+1e-9
@@ -227,6 +231,9 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
                 # st_j=='broken'（观察期内持续破位）：不另算，期满自然离场（连续阴跌≠二次事件）
         if st_j == 'broken' and close[j] > rec_line:
             st_j = 'recovered'          # 收复信号区上沿=复活(v1.7.14)
+        if st_j == 'broken' and close[j] < stop - 1.5*atr[j]:   # v1.7.34: 深破加速线
+            exit_day, exit_px, reason = j, close[j], '⛔深破加速止损'
+            break
         if st_j == 'broken' and (j - brk_j) > 2:
             exit_day, exit_px, reason = j, close[j], '⚠️破位止损'
             break
@@ -267,7 +274,7 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
 
 
 def _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
-              d_i, lo_i, hi_i, dead_px):
+              d_i, lo_i, hi_i, dead_px, anchor_px=None):
     """展示层信号后处理（v1.7.13 自原内联块提取，普通触轨与 G 路径共用）:
     破位/收复状态机(容忍1次+2天观察+收复信号区上沿复活) > ✅死锚标记 > 🏁趋势终结(FLAG_LINGER 出清)。
     d_i=信号日下标; lo_i=止损线; hi_i=收复参考线(信号区上沿); dead_px=死锚出场价。
@@ -276,6 +283,14 @@ def _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
     killed = False
     for j in range(d_i+1, n):
         if np.isnan(atr[j]) or np.isnan(cci[j]): continue
+        # v1.7.34: 保险丝(锚×0.8)收盘触及→⛔结局（与账本机同步）
+        if anchor_px is not None and close[j] <= anchor_px*0.8:
+            sig['brk_expire'] = True
+            break
+        # v1.7.34: 深破加速线（观察期内收盘<显示止损−1.5×ATR→⛔结局，与账本机同步）
+        if state == 'broken' and close[j] < lo_i - 1.5*atr[j]:
+            sig['brk_expire'] = True
+            break
         back = close[j] > hi_i
         pen = lo_i - close[j]
         if state == 'broken' and back:
@@ -418,7 +433,7 @@ def analyse(sym, bars, now_day):
                             sig_g['mon_clean'] = True
                     # 审查修复#2: G 信号与普通信号同走展示后处理（破位状态机+✅+🏁出清）
                     _g_keep = _sig_post(sig_g, high, low, close, openp, vol, atr, cci, ema10, n, dates,
-                                        j, stop_j, ema10[i]-atr[i], dead_j)
+                                        j, stop_j, ema10[i]-atr[i], dead_j, anchor_px=anchor_j)
                     sig_by_day[dates[j]] = sig_g   # v1.7.30: 无论去留全量登记（出清卡带 brk_expire/killed 状态供血缘读取）
                     if _g_keep:
                         sigs.append(sig_g)
@@ -474,7 +489,7 @@ def analyse(sym, bars, now_day):
             sig['sun_half'] = True    # v1.7.15: 红色标注旗标（卡片标签位）
 
         _keep = _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
-                          i, lo_i, hi_i, ema10[i]+atr[i])
+                          i, lo_i, hi_i, ema10[i]+atr[i], anchor_px=anchor)
         sig_by_day[dates[i]] = sig   # v1.7.30: 无论去留全量登记（出清卡带 brk_expire/killed 状态供血缘读取）
         if not _keep:
             continue    # 破位观察期满/二次确认/🏁回看期满 → 出清
@@ -679,7 +694,7 @@ def age_tag(x):
 
 
 REASON_EMO = {'⚠️破位止损': '⛔', '🏁趋势终结': '🏁', '✅到站止盈': '✅', '硬顶': '⏹', '保本离场': '⚖️', '✅确认失败离场': '❌'}   # v1.7.33
-REASON_SHORT = {'⚠️破位止损': '破位止损', '🏁趋势终结': '趋势终结', '✅到站止盈': '到站止盈', '硬顶': '硬顶', '保本离场': '保本', '✅确认失败离场': '确认失败'}   # v1.7.33
+REASON_SHORT = {'⛔深破加速止损': '深破加速', '⛔保险丝': '保险丝', '⚠️破位止损': '破位止损', '🏁趋势终结': '趋势终结', '✅到站止盈': '到站止盈', '硬顶': '硬顶', '保本离场': '保本', '✅确认失败离场': '确认失败'}   # v1.7.33
 REASON_CLS = {'⚠️破位止损': 'red', '🏁趋势终结': 'grn', '✅到站止盈': 'grn', '硬顶': '', '保本离场': '', '✅确认失败离场': 'red'}   # v1.7.33
 
 
