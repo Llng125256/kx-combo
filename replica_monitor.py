@@ -58,7 +58,9 @@
   ⑤模拟账户<100笔标注「样本不足，不构成有效性证据」
   · 行业分散：name括号解析→因果链归组，同大类≤2只/≤20%，同大类同日新开≤1只；
     解析失败进「未分类」桶同受约束；宽基ETF单列不计行业但计总敞口
-  · 熔断：总敞口≤50%、单票≤15%、同日新开≤3只
+    （v1.7.39 暂缓执行——无行业数据源，TODO 待接入行业分类后恢复）
+  · 熔断（v1.7.39 中间态单档·账本机真执行）：并发≤8、单票≤10%、总敞口≤50%、
+    杠杆=风险预算÷止损距离≤5×、止损距离>8%放弃入场；常量单源（pos_size/portfolio_admit）
   · 模拟盘=规则化全量模拟（每条合格信号必开仓、全约束），无幸存者偏差；
     资金费按0.01%/8h粗扣；跌穿止损按实际收盘记亏不美化
   · 市况横幅置顶：孤星日明示「今日不适合抄底」
@@ -90,7 +92,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kx_client import KxClient  # noqa: E402
 
 RED_TXT = "右偏型趋势跟随系统:进场→按趋势持有→严格纪律出场。约46%交易会被止损打掉(平均-7.66%)=必然的数学结果,不是系统坏了;利润来自拿得住的右尾(30天硬顶+32%/趋势终结+11%)。不敢扛浮亏/手动干预止损=不该用本系统。月月盈利、回撤浅、胜率高=任何真实交易系统都不可达(顶级CTA同样有深回撤,趋势策略胜率普遍不到45%),稳定的印钞机这个标准更是不存在"
-__version__ = "1.7.38"    # v1.7.38: 保险丝盘中-only（用户验收 2026-10-16，主管席终裁：盘中触及即走）：_simulate/_sig_post 保险丝判定由「收盘触及」改「盘中 low[j]<=fuse_px 即触发」，离场价=触丝价 fuse_px（按触丝价成交，非收盘价）；forming bar 隔离（v1.7.36 止于最后完整交易日）保留不动；翻案判据=样本外崩盘测试盘中版 maxDD 未优于收盘版或滑点损失>1pp 即回调收盘版    # v1.7.38(前置): ⛔结局红旗标签文案修复（保险丝≠期满）：文本页+HTML 标签此前只判 brk_expire 硬编码「期满已离场」，v1.7.34 起保险丝结局卡（触锚×0.8 后2日内离场）全部错挂期满文案——新增 brk_red_tag 单源按 exit_kind 分流（fuse→⛔保险丝触发·已按纪律出清 / 默认→期满），advice 层判定不动（线上取证 exit_kind 已正确落上）。纯展示层，判定/账本/候选环零接触    # v1.7.37: 期满真破位卡停留 1 天下架（交易分析团队主管席终裁批准，三席：多头驳回/空头批准/主管批准附条件）：EXPIRE_LINGER 1→0，恢复 v1.7.25 旧行为（期满即出清不挂卡）；结局可见性由 📋近日出清面板（v1.7.33）承接，上线前置条件=验收出清面板完整展示近7日全部结局。纯展示层，判定/账本/候选环零接触    # v1.7.36: forming bar 退出卡龄链路（xbi 卡龄标注闪断修复）：末根bar日期=now_day(UTC)判定为当日进行中bar，卡龄 _age 与 _sig_post 破位状态机/复活/期满/死锚🏁判定一律止于最后一个完整交易日 lc_idx——修复晚间拉取含forming bar导致的①卡龄漂移±1（🆕↔卡龄N天边界抖动）②held_old/brk_expire 随盘中价翻转→badge 显示/消失闪断（xbi 实测：forming close 上穿旧卡收复线→旧卡被复活出清→四态矩阵读「持有中」→held_old→🆕消失；盘中午后回落/次日完整收盘→翻转回显示）。与冻结规格「止损只看收盘」「保险丝收盘触及」口径一致；now_day=None 行为与旧版逐位一致（向后兼容）。纯展示层，判定/账本/候选环零接触    # v1.7.35: 撤销v1.7.34深破加速线（交易分析团队真agent复核：多头席全桶无优势+空头席参数脆弱+V3在案警示），保留保险丝无条件生效；箱体页另挂诚实声明    # v1.7.34: 破位观察期深破加速线+保险丝无条件生效（用户拍板2026-10-15，13512事件分桶数据背书，spec=verdict_v6_bombardment.md§7）：①观察期内收盘<显示止损−1.5×ATR→立即离场(⛔深破加速止损)不等期满 ②保险丝(锚×0.8)收盘触及无条件生效(⛔保险丝)——修复ASTS穿丝仍干等漏洞。展示机同步brk_expire结局。判定依据=深破桶697笔(2天制-1.45%≈d1.5-1.52%打平，缩短持刀时间)    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
+__version__ = "1.7.39"    # v1.7.39: 中间态风控层真执行进账本机（用户验收 2026-10-16，风控层定版：中间态单档）：模拟仓准入与仓位规则=并发≤CAP_CONCURRENCY(8)/单票名义≤CAP_TICKER(10%)/总敞口≤CAP_GROSS(50%)/杠杆=风险预算÷止损距离≤MAX_LEV(5×)/止损距离>MAX_STOP(8%)放弃入场，常量集中定义单源化（pos_size+portfolio_admit 唯一出处，展示层 direct_calc/常规卡同源复用）；行业分散暂缓——无行业数据源（sector_of 关键词启发式不可靠），CAP_SECTOR*/行业限额块停用并标注 TODO 待接入行业分类后恢复；60 交易日观察期条款（单日DD>20%降杠杆50%/PF<1.0停机/期满PF≥1.3转正）监控指标（交易日进度/单日最大DD/PF）在文本页尾部+HTML页脚输出。判定/候选环零接触    # v1.7.38: 保险丝盘中-only（用户验收 2026-10-16，主管席终裁：盘中触及即走）：_simulate/_sig_post 保险丝判定由「收盘触及」改「盘中 low[j]<=fuse_px 即触发」，离场价=触丝价 fuse_px（按触丝价成交，非收盘价）；forming bar 隔离（v1.7.36 止于最后完整交易日）保留不动；翻案判据=样本外崩盘测试盘中版 maxDD 未优于收盘版或滑点损失>1pp 即回调收盘版    # v1.7.38(前置): ⛔结局红旗标签文案修复（保险丝≠期满）：文本页+HTML 标签此前只判 brk_expire 硬编码「期满已离场」，v1.7.34 起保险丝结局卡（触锚×0.8 后2日内离场）全部错挂期满文案——新增 brk_red_tag 单源按 exit_kind 分流（fuse→⛔保险丝触发·已按纪律出清 / 默认→期满），advice 层判定不动（线上取证 exit_kind 已正确落上）。纯展示层，判定/账本/候选环零接触    # v1.7.37: 期满真破位卡停留 1 天下架（交易分析团队主管席终裁批准，三席：多头驳回/空头批准/主管批准附条件）：EXPIRE_LINGER 1→0，恢复 v1.7.25 旧行为（期满即出清不挂卡）；结局可见性由 📋近日出清面板（v1.7.33）承接，上线前置条件=验收出清面板完整展示近7日全部结局。纯展示层，判定/账本/候选环零接触    # v1.7.36: forming bar 退出卡龄链路（xbi 卡龄标注闪断修复）：末根bar日期=now_day(UTC)判定为当日进行中bar，卡龄 _age 与 _sig_post 破位状态机/复活/期满/死锚🏁判定一律止于最后一个完整交易日 lc_idx——修复晚间拉取含forming bar导致的①卡龄漂移±1（🆕↔卡龄N天边界抖动）②held_old/brk_expire 随盘中价翻转→badge 显示/消失闪断（xbi 实测：forming close 上穿旧卡收复线→旧卡被复活出清→四态矩阵读「持有中」→held_old→🆕消失；盘中午后回落/次日完整收盘→翻转回显示）。与冻结规格「止损只看收盘」「保险丝收盘触及」口径一致；now_day=None 行为与旧版逐位一致（向后兼容）。纯展示层，判定/账本/候选环零接触    # v1.7.35: 撤销v1.7.34深破加速线（交易分析团队真agent复核：多头席全桶无优势+空头席参数脆弱+V3在案警示），保留保险丝无条件生效；箱体页另挂诚实声明    # v1.7.34: 破位观察期深破加速线+保险丝无条件生效（用户拍板2026-10-15，13512事件分桶数据背书，spec=verdict_v6_bombardment.md§7）：①观察期内收盘<显示止损−1.5×ATR→立即离场(⛔深破加速止损)不等期满 ②保险丝(锚×0.8)收盘触及无条件生效(⛔保险丝)——修复ASTS穿丝仍干等漏洞。展示机同步brk_expire结局。判定依据=深破桶697笔(2天制-1.45%≈d1.5-1.52%打平，缩短持刀时间)    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
 GH_API = "https://api.github.com/repos/Llng125256/kx-combo/contents"
 FRESH_DAYS = 15
 HARD_CAP = 30            # 信号/模拟仓硬顶（天）——v1.7.19 回撤（D-Audit v1.0 扛单指纹双期坐实：30天窗 60.8%/+1.74% vs 60天窗 52.5%/+0.25%，30-60天龄陈旧信号为负贡献；用户拍板 2026-10-13）
@@ -98,16 +100,50 @@ FLAG_LINGER = 5
 EXPIRE_LINGER = 0        # v1.7.37: 期满停留下架（交易分析团队三席：多头驳回/空头批准/主管批准附条件），结局展示由📋出清面板承接（v1.7.33）；置1=回退v1.7.25停留1天行为
 WORKERS = 16
 BARS = 150
-MAX_LEV = 5.0            # 杠杆封顶
-STOP_FAR = 0.08          # 止损距离>8%放弃信号
+MAX_LEV = 5.0            # 杠杆封顶（=风险预算÷止损距离，≤5×；v1.7.39 单源）
+MAX_STOP = 0.08          # 止损距离>8%放弃入场（v1.7.39 单源，原 STOP_FAR）
 STOP_NEAR = 0.015        # 止损距离<1.5%按1.5%计
 TIERS = {'重仓': (10.0, 1.0), '中仓': (6.0, 0.6), '轻仓': (3.0, 0.3)}  # 名义%, 风险预算%
-CAP_TOTAL = 50.0         # 总敞口%
-CAP_SECTOR = 20.0        # 单行业敞口%
-CAP_SECTOR_N = 2         # 同行业最多仓位数
+# ---- v1.7.39 风控层常量（中间态单档·单源化）：模拟仓准入与仓位规则唯一出处，pos_size/portfolio_admit 执行 ----
+CAP_CONCURRENCY = 8      # 并发持仓上限（同时在仓≤8只）
+CAP_TICKER = 0.10        # 单票名义占比上限（10%净值）
+CAP_GROSS = 0.50         # 总敞口占比上限（50%净值）
+CAP_TOTAL = CAP_GROSS * 100.0   # 总敞口%（兼容别名，单源=CAP_GROSS）
 CAP_DAY_NEW = 3          # 同日新开
-CAP_SECTOR_DAY = 1       # 同行业同日新开
+# TODO(行业分散·暂缓): 原 CAP_SECTOR=20%/CAP_SECTOR_N=2/CAP_SECTOR_DAY=1 及账本机行业限额块自 v1.7.39
+# 停用——无行业数据源（sector_of 关键词启发式不可靠），待接入行业分类数据后恢复行业分散约束（用户验收 2026-10-16）
 FUND_FEE_DAY = 0.0003    # 资金费 0.01%/8h ≈ 0.03%/天（名义占比）
+
+
+def pos_size(tier, stop_dist, is_sun=False):
+    """v1.7.39: 仓位/杠杆单源计算（中间态单档）——账本机/展示层（direct_calc、常规卡、HTML卡）唯一出处。
+    名义 = min(档位基准, 风险预算÷止损距离, 单票上限 CAP_TICKER×100)；
+    杠杆 = max(1, min(MAX_LEV, 风险预算÷(名义×止损距离)))；周日名义减半（杠杆上限不变）。
+    返回 (notional, lev, reason)：reason 非 None = 放弃入场（当前仅止损距离>MAX_STOP）。"""
+    if stop_dist > MAX_STOP:
+        return None, None, '止损过宽'
+    base, risk = TIERS.get(tier, (3.0, 0.3))
+    notional = round(min(base, risk / stop_dist, CAP_TICKER * 100), 1)
+    lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist))), 1)
+    if is_sun:    # v1.7.15: 周日降权——名义减半（杠杆上限不变）
+        notional = round(notional * 0.5, 1)
+        lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist))), 1)
+    return notional, lev, None
+
+
+def portfolio_admit(active, sym, notional, day_new_n):
+    """v1.7.39: 组合级准入单源（中间态单档）——同票不重叠、并发≤CAP_CONCURRENCY、
+    总敞口≤CAP_GROSS、同日新开≤CAP_DAY_NEW。行业分散暂缓（无行业数据源，TODO 见常量区）。
+    返回 None=准入；否则拒入原因字符串（skip_n 计数键）。"""
+    if any(p['sym'] == sym for p in active):
+        return '已有持仓'
+    if len(active) >= CAP_CONCURRENCY:
+        return '并发满'
+    if sum(p['notional'] for p in active) + notional > CAP_GROSS * 100:
+        return '总敞口满'
+    if day_new_n >= CAP_DAY_NEW:
+        return '当日限额'
+    return None
 
 SECTOR_KEYS = [
     ('宽基', ('ETF', '指数', '基金')),
@@ -598,16 +634,11 @@ def score_of(grade, lay, env, day=None, mon_clean=False):
 def direct_calc(x, tier):
     """v1.7.23: E3 同日候选缺失时按信号字段直算（展示层，裁决 A）。
     返回 (stop_dist0, notional, lev)；过宽时 notional/lev 为 None（调用方按放弃文案处理）。
-    口径与常规卡一致：STOP_NEAR 下限、TIERS 档位公式、周日照旧减半、杠杆封顶 MAX_LEV。"""
+    口径与常规卡一致：STOP_NEAR 下限、TIERS 档位公式、周日照旧减半、杠杆封顶 MAX_LEV（v1.7.39: 统一走 pos_size 单源，含单票≤CAP_TICKER）。"""
     stop_dist0 = max(STOP_NEAR, (x['anchor'] - x['stop']) / x['anchor'])
-    if stop_dist0 > STOP_FAR:
+    notional, lev, sz_reason = pos_size(tier, stop_dist0, _is_sun(x['day']))    # v1.7.39: pos_size 单源
+    if sz_reason:
         return stop_dist0, None, None
-    base, risk = TIERS.get(tier, (3.0, 0.3))
-    notional = round(min(base, risk / stop_dist0), 1)
-    lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist0))), 1)
-    if _is_sun(x['day']):    # v1.7.23: E3 周日照旧减半（与常规卡一致）
-        notional = round(notional * 0.5, 1)
-        lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist0))), 1)
     return stop_dist0, notional, lev
 
 
@@ -841,20 +872,15 @@ def render_html(rows, closes, open_pos, st):
                                   advice_of(x, None) + '（同日候选缺失·按信号字段直算）' + _sup,
                                   tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x), sig_note=x.get('note', '')))
             continue
-        base, risk = TIERS.get(tier, (3.0, 0.3))
         stop_dist = max(STOP_NEAR, (cd['anchor'] - cd['stop']) / cd['anchor'])
-        if stop_dist > STOP_FAR:
+        notional, lev, sz_reason = pos_size(tier, stop_dist, _is_sun(x['day']))   # v1.7.39: HTML卡与账本机同源（pos_size 单源，含止损>MAX_STOP 放弃）
+        if sz_reason:
             sig_cards.append(card(x['grade'], sym, x.get('env', ''), live, score,
                                   anchor_s, f"{cd['stop']:.2f}", dead_s(x), f"{stop_dist*100:.1f}",
                                   tier, '—', '—', zone_s(x), ('信号日', x['day']),
                                   f"⛔止损距离过宽({stop_dist:.1%})，放弃该信号" + _sup, tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x),
                                   sig_note=x.get('note', '')))    # v1.7.23: E4 企稳备注独立成行
             continue
-        notional = round(min(base, risk / stop_dist), 1)
-        lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist))), 1)
-        if _is_sun(x['day']):    # v1.7.15: 周日降权——HTML卡建议名义同步减半（与文本页/账本一致）
-            notional = round(notional * 0.5, 1)
-            lev = round(max(1.0, min(MAX_LEV, risk / (notional * stop_dist))), 1)
         _cross = ''
         if sym in open_map:    # v1.7.17: 同标已有模拟仓——占位事实交叉标注
             _cross = f"｜该标的已有模拟仓（{open_map[sym]}开），本信号仅在册展示，按同标不重叠不入账"
@@ -895,12 +921,13 @@ def render_html(rows, closes, open_pos, st):
 规则全历史战绩（诚实口径，含旧规则候选与硬顶退出）：{st["hist_n"]} 笔 · 胜率 {st["hist_win"]:.0f}% · 均值 {st["hist_avg"]:+.2f}% · 中位 {st["hist_med"]:+.2f}% ｜ 在册卡溢价为幸存者快照仅供参考<br>
 扛单口径回测（2025-04→今 · 5171信号 · 含资金费 · 幸存者0.7折并列）：追卡片现价短线无超额（+5日超额 −0.27%）；回踩锚位进场+扛到 到站/趋势终结/30天硬顶 均值 +4.05%（0.7折 +2.83%，验证期衰减至 +2.44%）——历史回测≠未来承诺，非投资建议<br>
 模拟仓: 在仓 {st["n_open"]} / 已平 {st["n_closed"]} ｜ 已平 {st["n_closed"]} 笔 · 胜率 {(st["win"]/st["n_closed"] if st["n_closed"] else 0):.0%} · 单笔均值 {st["avg"]:+.3f}% · 累计 {st["cum"]:+.2f}%（含资金费）{sample_note}<br>
-页面读法：⚠️置顶先处理（破位观察·风控优先）→ 主信号卡=唯一分级（评分含周一桶×1.3，标签≠推荐强度）→ 现价贴信号区=入场区、超锚太多=追高 → ✅到站默认走 → 🏁亮了挪仓 → 禁入沉底勿捡 ｜ 约束：总敞口≤50% · 单票≤15% · 同日≤3只 · 同行业≤2只 · 孤星日禁入 · 周六信号不入册<br>
+页面读法：⚠️置顶先处理（破位观察·风控优先）→ 主信号卡=唯一分级（评分含周一桶×1.3，标签≠推荐强度）→ 现价贴信号区=入场区、超锚太多=追高 → ✅到站默认走 → 🏁亮了挪仓 → 禁入沉底勿捡 ｜ 约束：并发≤8 · 单票≤10% · 总敞口≤50% · 杠杆≤5× · 止损距离>8%放弃 · 同日≤3只 · 孤星日禁入 · 周六信号不入册（行业分散暂缓·待行业数据源）<br>
 券商挂单: 只挂保险丝单=锚×0.8（盘中防崩，不参与常规止损） | 止损只看收盘: 收盘&lt;收盘止损线→次日开盘无条件出, 死区内（收盘止损线~止损）照常持有（每日04:40判定）<br>
 📌 每标的仅显示日期最新的一条信号；被顶掉信号的历史持仓收益已计入模拟账本</div>'''
 
     sim_html = chr(10).join(sim_cards)
     sig_html = chr(10).join(sig_cards + jin_cards)   # 禁入卡沉底
+    obs_html = f'<p class="note">{esc(st.get("obs", ""))}</p>' if st.get('obs') else ''    # v1.7.39: 观察期监控指标行（页脚，空则略去）
     shadow_html = f'<p class="note">{esc(st.get("shadow", ""))}</p>' if st.get('shadow') else ''    # v1.7.23: E6 影子观察行（页脚免责上一行，空则略去）
     _ex = st.get('recent_exits') or []    # v1.7.33: 📋 近日出清面板（纯展示）
     if _ex:
@@ -947,6 +974,7 @@ h2{{font-size:16px;margin:20px 0 10px}}
 <h2>📋 在册信号（{len(sig_cards)}）</h2><div class="grid2">{sig_html}</div>
 {shadow_html}
 {exits_html}
+{obs_html}
 <p class="note">⚠️ 以上为历史统计规则输出，非投资建议；仓位与杠杆自定，极端行情下任何止损价都可能被跳空击穿。模拟成交假设 T+1 开盘价、无滑点与流动性约束；展示口径与模拟口径不同，模拟仓更保守。</p>
 </div></body></html>'''
 
@@ -1041,27 +1069,14 @@ def main() -> int:
         tier = tier_of(cd['grade'], lay, cd['env'])
         if tier == '禁入':
             skip_n['禁入'] += 1; continue
-        if cd['stop_dist'] > STOP_FAR:
-            skip_n['止损过宽'] += 1; continue
-        base, risk = TIERS[tier]
-        notional = round(min(base, risk/cd['stop_dist']), 1)
-        lev = round(max(1.0, min(MAX_LEV, risk/(notional*cd['stop_dist']))), 1)
-        if _is_sun(cd['day']):    # v1.7.15: 周日降权——名义减半（杠杆上限不变）
-            notional = round(notional*0.5, 1)
-            lev = round(max(1.0, min(MAX_LEV, risk/(notional*cd['stop_dist']))), 1)
-        used = sum(p['notional'] for p in active)
-        if used + notional > CAP_TOTAL:
-            skip_n['总敞口满'] += 1; continue
-        if day_new[cd['day']] >= CAP_DAY_NEW:
-            skip_n['当日限额'] += 1; continue
-        b = cd['sector']
-        if b != '宽基':   # v1.7.22(c): 未分类桶同日≤1 已由 CAP_SECTOR_DAY=1 同键覆盖（审计 🟡：删冗余检查）；泄漏主修=关键词补全
-            cnt_b = sum(1 for p in active if p['sector'] == b)
-            not_b = sum(p['notional'] for p in active if p['sector'] == b)
-            if cnt_b >= CAP_SECTOR_N or not_b + notional > CAP_SECTOR:
-                skip_n[f'{b}限额'] += 1; continue
-            if day_new[(cd['day'], b)] >= CAP_SECTOR_DAY:
-                skip_n[f'{b}当日限额'] += 1; continue
+        notional, lev, sz_reason = pos_size(tier, cd['stop_dist'], _is_sun(cd['day']))   # v1.7.39: 仓位/杠杆单源——单票≤CAP_TICKER、杠杆≤MAX_LEV、止损距离>MAX_STOP 在此放弃
+        if sz_reason:
+            skip_n[sz_reason] += 1; continue
+        reason = portfolio_admit(active, sym, notional, day_new[cd['day']])   # v1.7.39: 中间态准入真执行——并发≤CAP_CONCURRENCY/总敞口≤CAP_GROSS/同日≤CAP_DAY_NEW
+        if reason:
+            skip_n[reason] += 1; continue
+        # TODO(行业分散·暂缓): 原行业限额块（CAP_SECTOR/CAP_SECTOR_N/CAP_SECTOR_DAY）v1.7.39 停用——无行业数据源，接入后恢复（见常量区 TODO）
+        b = cd.get('sector', '宽基')
         pos = {'sym': sym, 'day': cd['day'], 'anchor': cd['anchor'], 'tier': tier,
                'notional': notional, 'lev': lev, 'stop': cd['stop'], 'sector': b, 'age': cd['n'] - 1 - cd['idx'],   # v1.7.22(i): cd['n']=该标的K线总数
                'score': score_of(cd['grade'], lay, cd['env'], cd['day']),
@@ -1071,8 +1086,7 @@ def main() -> int:
                'open_idx': cd['idx'], 'n': cd['n']}
         active.append(pos)
         day_new[cd['day']] += 1
-        if b != '宽基':
-            day_new[(cd['day'], b)] += 1
+        # v1.7.39: 行业同日新开计数随行业限额块一并停用（TODO 见常量区）
         # 平仓结算：推演已定退出日的，按当时价格入账（占用已由 sweep 释放）
         if pos['exit_date'] is not None:
             days_held = max(1, (pos['exit_idx'] or pos['open_idx']) - pos['open_idx'])
@@ -1090,6 +1104,30 @@ def main() -> int:
     realized = [p['pnl'] for p in closed]
     win = sum(1 for x in realized if x > 0)
     cum = sum(realized)
+
+    # ---- v1.7.39: 60 交易日观察期监控指标（页脚输出）——条款：单日DD>20%→次日降杠杆50% / PF<1.0→停机 / 期满 PF≥1.3→转正 ----
+    def obs_metrics():
+        """单日DD=按 exit_date 聚合已平盈亏的逐日净值单日最大跌幅；PF=总盈利/总亏损（已平，含资金费）；
+        观察交易日数=首仓开仓日→now_day 的日历交易日跨度（封顶 60 显示）。"""
+        day_pnl = {}
+        for p in closed:
+            _d = p.get('exit_date')
+            if _d: day_pnl[_d] = day_pnl.get(_d, 0.0) + p['pnl']
+        prev_eq, max_dd = 100.0, 0.0
+        for _d in sorted(day_pnl):
+            eq = prev_eq + day_pnl[_d]
+            if prev_eq > 0: max_dd = max(max_dd, max(0.0, (prev_eq - eq) / prev_eq))
+            prev_eq = eq
+        _gw = sum(x for x in realized if x > 0)
+        _gl = -sum(x for x in realized if x < 0)
+        pf = (_gw / _gl) if _gl > 1e-12 else None
+        _first = min((p['day'] for p in closed + open_pos), default=None)
+        n_obs = (len([d for d in cal if _first <= d <= now_day]) - 1) if (_first and cal) else 0
+        return max(0, n_obs), max_dd, pf
+    obs_days, obs_dd, obs_pf = obs_metrics()
+    _pf_s = '—' if obs_pf is None else ('∞' if obs_pf > 100 else f"{obs_pf:.2f}")
+    obs_line = (f"观察期监控（60交易日条款·中间态单档）: 交易日 {min(obs_days, 60)}/60 | "
+                f"单日最大DD {obs_dd:.1%}（>20%→次日降杠杆50%）| PF {_pf_s}（<1.0→停机；期满≥1.3→转正）")
 
     # ---- 全历史战绩（诚实口径：全部候选含已平，v1.7.22 横幅主口径）----
     _all_rets = np.array([c['ret'] for cs in sym_cands.values() for c in cs if c.get('ret') is not None]) / 100.0
@@ -1203,7 +1241,7 @@ def main() -> int:
              f"扛单口径回测: 追现价短线无超额(+5日 -0.27%) | 回踩锚位进场+扛单(到站/趋势终结/30天硬顶) 均值 +4.05% (0.7折 +2.83%, 验证期 +2.44%, 含资金费) (2025-04→今 5171信号, 历史回测≠未来承诺)",
              "页面读法：⚠️置顶先处理（破位观察·风控优先）→ 主信号卡=唯一分级（评分含周一桶×1.3，标签≠推荐强度）→ 现价贴信号区=入场区、超锚太多=追高 → ✅到站默认走 → 🏁亮了挪仓 → 禁入沉底勿捡",    # v1.7.23: E5 读法文案更新
              "券商挂单: 只挂保险丝单=锚×0.8(盘中防崩, 不参与常规止损) | 止损只看收盘: 收盘<收盘止损线→次日开盘无条件出, 死区内(收盘止损线~止损)照常持有(每日04:40判定)",    # v1.7.31: 交易分析团队终裁挂单转换规则
-             "约束：总敞口≤50% | 单票≤15% | 同日≤3只 | 同行业≤2只 | 孤星日禁入 | 周六信号不入册",
+             "约束：并发≤8 | 单票≤10% | 总敞口≤50% | 杠杆≤5× | 止损距离>8%放弃 | 同日≤3只 | 孤星日禁入 | 周六信号不入册（行业分散暂缓·待行业数据源）",
              "📌 每标的仅显示日期最新的一条信号；被顶掉信号的历史持仓收益已计入下方模拟账本",
              "=" * 46]
     if shadow_line:    # v1.7.23: E6 影子观察统计行插在「约束：」行之后
@@ -1243,16 +1281,11 @@ def main() -> int:
             lines.append(f"   └ 评分{score} {lay}日 {tier} {_n0} {_l0} | "
                          f"止损{x['stop']:.2f}(收盘确认,距锚{stop_dist0:.1%}) | {advice0}（同日候选缺失·按信号字段直算）")
             continue
-        base, risk = TIERS.get(tier, (3.0, 0.3))
         stop_dist = max(STOP_NEAR, (cd['anchor']-cd['stop'])/cd['anchor'])
-        if stop_dist > STOP_FAR:
+        notional, lev, sz_reason = pos_size(tier, stop_dist, _is_sun(x['day']))   # v1.7.39: 展示层与账本机同源（pos_size 单源，含止损>MAX_STOP 放弃）
+        if sz_reason:
             lines.append(f"   └ 评分{score} {lay}日 ⛔止损距离过宽({stop_dist:.1%})，放弃该信号")
             continue
-        notional = round(min(base, risk/stop_dist), 1)
-        lev = round(max(1.0, min(MAX_LEV, risk/(notional*stop_dist))), 1)
-        if _is_sun(x['day']):    # v1.7.15: 周日降权——建议名义同步减半
-            notional = round(notional*0.5, 1)
-            lev = round(max(1.0, min(MAX_LEV, risk/(notional*stop_dist))), 1)
         advice = state_advice(x, cd)   # v1.7.29: 公共提取（v1.7.25 期满事实陈述/模拟仓离场后缀语义与原内联逐字一致）
         _n_s, _l_s = ('—', '—') if x.get('brk_expire') else (f"{notional}%", f"{lev}x")   # v1.7.25 审计🟢: 期满卡仓位杠杆置—（已出清无可交易建议）
         lines.append(f"   └ 评分{score} {lay}日 {tier} {_n_s} {_l_s} | "
@@ -1261,6 +1294,7 @@ def main() -> int:
         lines.append("（当前无在册信号）")
     _recent_exits = collect_recent_exits(sym_cands)   # v1.7.33: 📋 近日出清面板（纯展示，页面尾部；计算一次双通道复用）
     lines.extend(exits_panel_text(_recent_exits))
+    lines.append(obs_line)    # v1.7.39: 60交易日观察期监控指标（页脚输出）
     lines.append(f"拦截统计: " + " ".join(f"{k}{v}" for k, v in skip_n.most_common()) if skip_n else "")
     text = "\n".join(lines) + "\n"
     text += ("\n⚠️ 以上为历史统计规则输出，非投资建议；仓位与杠杆自定，极端行情下任何止损价都可能被跳空击穿。\n"
@@ -1274,6 +1308,7 @@ def main() -> int:
         'hist_n': hist_n, 'hist_win': hist_win, 'hist_avg': hist_avg, 'hist_med': hist_med,
         'n_open': len(open_pos), 'n_closed': len(closed),
         'shadow': shadow_line,    # v1.7.23: E6 影子观察统计行送 HTML 页脚
+        'obs': obs_line,    # v1.7.39: 60交易日观察期监控指标送 HTML 页脚
         'recent_exits': _recent_exits,    # v1.7.33: 📋 近日出清面板数据（纯展示，复用文本页同一次计算）
         'win': win if closed else 0, 'avg': float(np.mean(realized)) if realized else 0.0,
         'cum': cum,
