@@ -89,7 +89,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kx_client import KxClient  # noqa: E402
 
 RED_TXT = "右偏型趋势跟随系统:进场→按趋势持有→严格纪律出场。约46%交易会被止损打掉(平均-7.66%)=必然的数学结果,不是系统坏了;利润来自拿得住的右尾(30天硬顶+32%/趋势终结+11%)。不敢扛浮亏/手动干预止损=不该用本系统。月月盈利、回撤浅、胜率高=任何真实交易系统都不可达(顶级CTA同样有深回撤,趋势策略胜率普遍不到45%),稳定的印钞机这个标准更是不存在"
-__version__ = "1.7.35"    # v1.7.35: 撤销v1.7.34深破加速线（交易分析团队真agent复核：多头席全桶无优势+空头席参数脆弱+V3在案警示），保留保险丝无条件生效；箱体页另挂诚实声明    # v1.7.34: 破位观察期深破加速线+保险丝无条件生效（用户拍板2026-10-15，13512事件分桶数据背书，spec=verdict_v6_bombardment.md§7）：①观察期内收盘<显示止损−1.5×ATR→立即离场(⛔深破加速止损)不等期满 ②保险丝(锚×0.8)收盘触及无条件生效(⛔保险丝)——修复ASTS穿丝仍干等漏洞。展示机同步brk_expire结局。判定依据=深破桶697笔(2天制-1.45%≈d1.5-1.52%打平，缩短持刀时间)    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
+__version__ = "1.7.36"    # v1.7.36: forming bar 退出卡龄链路（xbi 卡龄标注闪断修复）：末根bar日期=now_day(UTC)判定为当日进行中bar，卡龄 _age 与 _sig_post 破位状态机/复活/期满/死锚🏁判定一律止于最后一个完整交易日 lc_idx——修复晚间拉取含forming bar导致的①卡龄漂移±1（🆕↔卡龄N天边界抖动）②held_old/brk_expire 随盘中价翻转→badge 显示/消失闪断（xbi 实测：forming close 上穿旧卡收复线→旧卡被复活出清→四态矩阵读「持有中」→held_old→🆕消失；盘中午后回落/次日完整收盘→翻转回显示）。与冻结规格「止损只看收盘」「保险丝收盘触及」口径一致；now_day=None 行为与旧版逐位一致（向后兼容）。纯展示层，判定/账本/候选环零接触    # v1.7.35: 撤销v1.7.34深破加速线（交易分析团队真agent复核：多头席全桶无优势+空头席参数脆弱+V3在案警示），保留保险丝无条件生效；箱体页另挂诚实声明    # v1.7.34: 破位观察期深破加速线+保险丝无条件生效（用户拍板2026-10-15，13512事件分桶数据背书，spec=verdict_v6_bombardment.md§7）：①观察期内收盘<显示止损−1.5×ATR→立即离场(⛔深破加速止损)不等期满 ②保险丝(锚×0.8)收盘触及无条件生效(⛔保险丝)——修复ASTS穿丝仍干等漏洞。展示机同步brk_expire结局。判定依据=深破桶697笔(2天制-1.45%≈d1.5-1.52%打平，缩短持刀时间)    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
 GH_API = "https://api.github.com/repos/Llng125256/kx-combo/contents"
 FRESH_DAYS = 15
 HARD_CAP = 30            # 信号/模拟仓硬顶（天）——v1.7.19 回撤（D-Audit v1.0 扛单指纹双期坐实：30天窗 60.8%/+1.74% vs 60天窗 52.5%/+0.25%，30-60天龄陈旧信号为负贡献；用户拍板 2026-10-13）
@@ -360,6 +360,12 @@ def analyse(sym, bars, now_day):
     openp = np.array([float(b['open']) for b in bars])
     vol = np.array([float(b.get('volume') or 0) for b in bars])
     n = len(bars)
+    # v1.7.36: forming bar 不参与卡龄链路——末根bar日期=now_day(UTC)即为当日进行中bar，
+    # 卡龄与破位状态机一律止于最后一个完整交易日 lc_idx（修复晚间拉取含forming bar导致的
+    # 卡龄漂移±1与 held_old/brk_expire 随盘中价闪断；now_day=None 时行为与旧版完全一致）
+    lc_idx = n - 1
+    if now_day and dates[-1] == now_day:
+        lc_idx = n - 2
     ema10 = ema(close, 10)
     tr = np.maximum(high[1:], close[:-1]) - np.minimum(low[1:], close[:-1])
     tr = np.concatenate([[high[0]-low[0]], tr])
@@ -428,7 +434,7 @@ def analyse(sym, bars, now_day):
                         if not _t1 and not _t2:
                             sig_g['mon_clean'] = True
                     # 审查修复#2: G 信号与普通信号同走展示后处理（破位状态机+✅+🏁出清）
-                    _g_keep = _sig_post(sig_g, high, low, close, openp, vol, atr, cci, ema10, n, dates,
+                    _g_keep = _sig_post(sig_g, high, low, close, openp, vol, atr, cci, ema10, lc_idx + 1, dates,
                                         j, stop_j, ema10[i]-atr[i], dead_j, anchor_px=anchor_j)
                     sig_by_day[dates[j]] = sig_g   # v1.7.30: 无论去留全量登记（出清卡带 brk_expire/killed 状态供血缘读取）
                     if _g_keep:
@@ -484,7 +490,7 @@ def analyse(sym, bars, now_day):
             sig['note'] = ('周日信号·权重0.5·复评中｜' + sig['note']).strip('｜')    # v1.7.15
             sig['sun_half'] = True    # v1.7.15: 红色标注旗标（卡片标签位）
 
-        _keep = _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
+        _keep = _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, lc_idx + 1, dates,
                           i, lo_i, hi_i, ema10[i]+atr[i], anchor_px=anchor)
         sig_by_day[dates[i]] = sig   # v1.7.30: 无论去留全量登记（出清卡带 brk_expire/killed 状态供血缘读取）
         if not _keep:
@@ -538,8 +544,8 @@ def analyse(sym, bars, now_day):
     sigs = sorted((s for s in sigs if (n - 1) - s['_idx'] <= HARD_CAP),
                   key=lambda x: x['day'], reverse=True)
     latest = sigs[0] if sigs else None
-    for _s in sig_by_day.values():    # v1.7.32: 卡龄=交易日差，信号日定格供展示层 age_tag 消费
-        if isinstance(_s, dict) and '_idx' in _s: _s['_age'] = (n - 1) - _s['_idx']
+    for _s in sig_by_day.values():    # v1.7.32: 卡龄=交易日差，信号日定格供展示层 age_tag 消费；v1.7.36: 止于最后完整交易日
+        if isinstance(_s, dict) and '_idx' in _s: _s['_age'] = lc_idx - _s['_idx']
     return latest, candidates, touch_days, close[-1], set(dates), sig_by_day   # v1.7.30: +sig_by_day 展示层状态索引
 
 
@@ -943,11 +949,12 @@ def main() -> int:
     names = {it['symbol']: (it.get('name') or '') for it in items
              if (it.get('underlying_type') or '') == 'EQUITY' and it.get('symbol')}
     pool = sorted(names)
+    now_day = datetime.now(timezone.utc).strftime('%Y-%m-%d')   # v1.7.36: 前置——analyse 需据此识别末根forming bar
 
     def one(sym):
         try:
             d = cli.get_kline(sym, 'futures', '1d', BARS)
-            sig, cands, tdays, lc, dset, sig_by_day = analyse(sym, d.get('bars') or [], None)
+            sig, cands, tdays, lc, dset, sig_by_day = analyse(sym, d.get('bars') or [], now_day)
             return sym, sig, cands, tdays, lc, dset, sig_by_day
         except Exception:
             return sym, 'ERR', [], set(), 0, set(), {}
@@ -955,7 +962,6 @@ def main() -> int:
     with ThreadPoolExecutor(WORKERS) as ex:
         results = list(ex.map(one, pool))
 
-    now_day = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     day_trig = Counter()
     sym_cands, sigs, closes, sig_by_days = {}, {}, {}, {}   # v1.7.30: +sig_by_days 展示层状态索引（sym→{day: sig}）
     calendar = set()
