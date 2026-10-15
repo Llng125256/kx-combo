@@ -215,6 +215,7 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
         if np.isnan(atr[j]) or np.isnan(cci[j]): continue
         if fuse_px is not None and close[j] <= fuse_px:   # v1.7.34: 保险丝收盘触及无条件离场
             exit_day, exit_px, reason = j, close[j], '⛔保险丝'
+            sig_exit_kind = 'fuse'
             break
         pen = stop - close[j]
         if pen > 0.3*atr[j]:
@@ -233,6 +234,7 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
             st_j = 'recovered'          # 收复信号区上沿=复活(v1.7.14)
         if st_j == 'broken' and close[j] < stop - 1.5*atr[j]:   # v1.7.34: 深破加速线
             exit_day, exit_px, reason = j, close[j], '⛔深破加速止损'
+            sig_exit_kind = 'deep'
             break
         if st_j == 'broken' and (j - brk_j) > 2:
             exit_day, exit_px, reason = j, close[j], '⚠️破位止损'
@@ -283,13 +285,15 @@ def _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
     killed = False
     for j in range(d_i+1, n):
         if np.isnan(atr[j]) or np.isnan(cci[j]): continue
-        # v1.7.34: 保险丝(锚×0.8)收盘触及→⛔结局（与账本机同步）
+        # v1.7.34: 保险丝(锚×0.8)收盘触及→⛔结局（与账本机同步）；live态触丝视为确认破位入观察流（v1.7.34a 堵永久滞留泄漏）
         if anchor_px is not None and close[j] <= anchor_px*0.8:
-            sig['brk_expire'] = True
+            sig['brk_expire'] = True; sig['exit_kind'] = 'fuse'
+            if state != 'broken':
+                state, brk_j = 'broken', j
             break
         # v1.7.34: 深破加速线（观察期内收盘<显示止损−1.5×ATR→⛔结局，与账本机同步）
         if state == 'broken' and close[j] < lo_i - 1.5*atr[j]:
-            sig['brk_expire'] = True
+            sig['brk_expire'] = True; sig['exit_kind'] = 'deep'
             break
         back = close[j] > hi_i
         pen = lo_i - close[j]
@@ -612,7 +616,10 @@ def state_advice(x, cd=None):
     """v1.7.29: 状态 advice 公共提取——禁入分支复用，只追加不覆盖。
     架构原则（芒格裁决升格）：任何新信息的展示，不得降低旧仓关键信息可达性——
     禁入/孤星等全局状态是附加徽标，永远不得替换卡片自身的状态 advice。"""
-    if x.get('brk_expire'): return '⛔真破位·期满未收复，已按纪律出清（模拟仓口径），本卡仅作结局展示'
+    if x.get('brk_expire'):
+        if x.get('exit_kind') == 'fuse': return '⛔保险丝触发·已按纪律出清（模拟仓口径），本卡仅作结局展示'
+        if x.get('exit_kind') == 'deep': return '⛔深破加速止损·已按纪律出清（模拟仓口径），本卡仅作结局展示'
+        return '⛔真破位·期满未收复，已按纪律出清（模拟仓口径），本卡仅作结局展示'
     if x.get('flag'): return '🏁离场：触发离场线，按纪律出局'
     if x.get('warn'):
         a = '⚠️确认破位·2日观察期：止损含0.3×ATR容差（见收盘止损线），收盘收上信号区上沿即复活，期满未收复即离场，复活后再破立即离场'
