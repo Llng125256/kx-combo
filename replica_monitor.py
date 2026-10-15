@@ -215,7 +215,6 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
         if np.isnan(atr[j]) or np.isnan(cci[j]): continue
         if fuse_px is not None and close[j] <= fuse_px:   # v1.7.34: 保险丝收盘触及无条件离场
             exit_day, exit_px, reason = j, close[j], '⛔保险丝'
-            sig_exit_kind = 'fuse'
             break
         pen = stop - close[j]
         if pen > 0.3*atr[j]:
@@ -234,7 +233,6 @@ def _simulate(high, low, close, vol, ema10, atr, cci, n, dates, i0, ei, stop, de
             st_j = 'recovered'          # 收复信号区上沿=复活(v1.7.14)
         if st_j == 'broken' and close[j] < stop - 1.5*atr[j]:   # v1.7.34: 深破加速线
             exit_day, exit_px, reason = j, close[j], '⛔深破加速止损'
-            sig_exit_kind = 'deep'
             break
         if st_j == 'broken' and (j - brk_j) > 2:
             exit_day, exit_px, reason = j, close[j], '⚠️破位止损'
@@ -320,7 +318,7 @@ def _sig_post(sig, high, low, close, openp, vol, atr, cci, ema10, n, dates,
         if lag > 2 + EXPIRE_LINGER: return False    # v1.7.25: 停留 EXPIRE_LINGER 天后出清
         if lag > 2:
             sig['brk_expire'] = True    # v1.7.25: 期满真破位·结局停留日——不设⚠️观察警告（避免假警报位），改挂「⛔真破位·期满已离场」红旗并归🏁出清组
-        else:
+        elif not sig.get('exit_kind'):   # v1.7.34a(B②): fuse/deep 结局卡不挂 ⚠️观察中
             sig['warn'] = (sig['warn'] + f' ⚠️破位{dates[brk_j][5:]}观察中').strip()
     elif state == 'recovered':
         rng_r = high[rec_j]-low[rec_j]+1e-9
