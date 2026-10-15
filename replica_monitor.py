@@ -89,7 +89,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kx_client import KxClient  # noqa: E402
 
 RED_TXT = "右偏型趋势跟随系统:进场→按趋势持有→严格纪律出场。约46%交易会被止损打掉(平均-7.66%)=必然的数学结果,不是系统坏了;利润来自拿得住的右尾(30天硬顶+32%/趋势终结+11%)。不敢扛浮亏/手动干预止损=不该用本系统。月月盈利、回撤浅、胜率高=任何真实交易系统都不可达(顶级CTA同样有深回撤,趋势策略胜率普遍不到45%),稳定的印钞机这个标准更是不存在"
-__version__ = "1.7.30"    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
+__version__ = "1.7.33"    # v1.7.33: 📋 近日出清面板（用户拍板 2026-10-15，panel_spec 冻结规格）：近7个交易日全部出清结局（⛔破位/🏁趋势终结/✅到站/⏹硬顶/⚖️保本/❌确认失败）滚动展示，文本页尾部+HTML 底部独立 section，解决期满红旗卡一天蒸发的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.32: 卡龄标注上卡（用户拍板 2026-10-15，badge_spec 冻结规格）：每卡显示 🆕新卡(0-1交易日)/卡龄N天(2-4)/⏳老卡N天·新卡窗口已过(≥5)，文本页标签后+HTML卡主标签正下方同级；⛔期满卡与 held_old 豁免卡不显示。数据依据=卡龄课题 6803 笔配对回测（只买新卡终裁）。纯展示层，判定/账本/候选环零接触    # v1.7.31: 展示层整改（用户 ASTS 质询驱动+交易分析团队终裁）：①「有效止损」改名「收盘止损线」（语义诚实化：收盘跌破它才进观察期）②新增死区挣扎徽章（收盘∈[收盘止损线,止损) 时明示未确认破位照常持有）③新增保险丝单参考价=锚×0.8（券商挂单转换规则：盘中只防崩）④页头挂单规则行⑤期满红旗升权（用户拍板方案a）：被新信号顶替的期满卡同屏展示一天（归🏁出清组），期满次日自动出清——修复「期满红旗线上零出现」的可见性盲区。纯展示层，判定/账本/候选环零接触    # v1.7.30: 顶替血缘旧卡状态标注修复（交易分析团队双席辩论 bull22:bear21+研究主管终裁，用户拍板）：状态读取源从候选环 exit_date（9/9 全 None 坏源）改读与卡面同源的 sig 展示层状态（sig_by_day 全量传递），四态收敛矩阵+不可判定中性渲染安全网，判定/账本/候选环零接触    # v1.7.29: 展示层资本保全修复（投资大师专家团 5 票会诊裁定）：①架构原则——任何新信息的展示不得降低旧仓关键信息可达性；②孤星/禁入标注只追加不覆盖（文本页+HTML 双改， advice 不再被 continue 丢弃）；③顶替明示——新卡附旧卡血缘（日/锚/止损/状态/浮盈%/距到站%），旧卡在仓时动词降级「买入→在册监控」+「展示位替换≠加仓指令」防火墙    # v1.7.27: 页面开头新增红色系统性质声明（右偏趋势跟随/止损是数学必然）    # v1.7.26: 横幅新增扛单口径回测事实行（追现价无超额/锚位扛单正期望·含0.7折与衰减如实标注）    # v1.7.25: 期满真破位卡结局停留1天（红旗+归🏁出清组）
 GH_API = "https://api.github.com/repos/Llng125256/kx-combo/contents"
 FRESH_DAYS = 15
 HARD_CAP = 30            # 信号/模拟仓硬顶（天）——v1.7.19 回撤（D-Audit v1.0 扛单指纹双期坐实：30天窗 60.8%/+1.74% vs 60天窗 52.5%/+0.25%，30-60天龄陈旧信号为负贡献；用户拍板 2026-10-13）
@@ -527,6 +527,8 @@ def analyse(sym, bars, now_day):
     sigs = sorted((s for s in sigs if (n - 1) - s['_idx'] <= HARD_CAP),
                   key=lambda x: x['day'], reverse=True)
     latest = sigs[0] if sigs else None
+    for _s in sig_by_day.values():    # v1.7.32: 卡龄=交易日差，信号日定格供展示层 age_tag 消费
+        if isinstance(_s, dict) and '_idx' in _s: _s['_age'] = (n - 1) - _s['_idx']
     return latest, candidates, touch_days, close[-1], set(dates), sig_by_day   # v1.7.30: +sig_by_day 展示层状态索引
 
 
@@ -598,11 +600,31 @@ def state_advice(x, cd=None):
     if x.get('brk_expire'): return '⛔真破位·期满未收复，已按纪律出清（模拟仓口径），本卡仅作结局展示'
     if x.get('flag'): return '🏁离场：触发离场线，按纪律出局'
     if x.get('warn'):
-        a = '⚠️确认破位·2日观察期：止损含0.3×ATR容差（见有效止损），收盘收上信号区上沿即复活，期满未收复即离场，复活后再破立即离场'
+        a = '⚠️确认破位·2日观察期：止损含0.3×ATR容差（见收盘止损线），收盘收上信号区上沿即复活，期满未收复即离场，复活后再破立即离场'
         if cd and cd.get('reason') == '⚠️破位止损' and x.get('grade') == '🥈': a += '（模拟仓已按风控口径离场）'
         return a
     if x.get('dead'): return '✅已到站：默认走；趋势健在则留并上移止损至锚价'
     return '持有中，等 ✅/🏁/⚠️'
+
+
+def zone_badge(x, lc):
+    """v1.7.31: 死区挣扎徽章（纯展示，ASTS 用户质询驱动）——收盘∈[stop_eff, stop) 时明示未确认破位。
+    判定/账本零接触；warn/期满/已平等状态卡不重复标注。"""
+    se, st = x.get('stop_eff'), x.get('stop')
+    if (not lc or not isinstance(se, (int, float)) or not isinstance(st, (int, float))
+            or x.get('warn') or x.get('brk_expire') or x.get('flag') or x.get('dead')):
+        return ''
+    if se <= lc < st:
+        return f"🔻死区挣扎中: 收盘{lc:.2f}∈{se:.2f}~{st:.2f} 未确认破位, 照常持有"
+    return ''
+
+
+def fuse_px(x):
+    """v1.7.31: 券商保险丝单参考价=锚×0.8（2026-10-14 交易分析团队终裁：盘中只防崩, 止损只看收盘）。纯展示。"""
+    a = x.get('anchor')
+    if not a:
+        return '—'
+    return f"{a*0.8:.2f}" if a < 1000 else f"{a*0.8:.1f}"
 
 
 def row_sort_key(r, closes):
@@ -644,6 +666,58 @@ def _is_sun(dstr):
     return _wd(dstr) == 6
 
 
+def age_tag(x):
+    """v1.7.32: 卡龄标注（纯展示层，badge_spec 冻结规格 2026-10-15）——交易日口径 (n−1)−_idx；
+    0-1=🆕新卡 / 2-4=卡龄N天 / ≥5=⏳老卡N天·新卡窗口已过；⛔期满红旗卡与 held_old 豁免卡不显示（防误导）。
+    数据依据：卡龄课题 6803 笔配对回测（K5 −0.70pp/K10 −3.15pp，p=0.0000，年分段 100% 同号）"""
+    if x.get('brk_expire') or x.get('held_old'): return ''
+    a = x.get('_age')
+    if a is None: return ''
+    if a <= 1: return '🆕新卡'
+    if a <= 4: return f'卡龄{a}天'
+    return f'⏳老卡{a}天·新卡窗口已过'
+
+
+REASON_EMO = {'⚠️破位止损': '⛔', '🏁趋势终结': '🏁', '✅到站止盈': '✅', '硬顶': '⏹', '保本离场': '⚖️', '✅确认失败离场': '❌'}   # v1.7.33
+REASON_SHORT = {'⚠️破位止损': '破位止损', '🏁趋势终结': '趋势终结', '✅到站止盈': '到站止盈', '硬顶': '硬顶', '保本离场': '保本', '✅确认失败离场': '确认失败'}   # v1.7.33
+REASON_CLS = {'⚠️破位止损': 'red', '🏁趋势终结': 'grn', '✅到站止盈': 'grn', '硬顶': '', '保本离场': '', '✅确认失败离场': 'red'}   # v1.7.33
+
+
+def collect_recent_exits(sym_cands, max_days=7):
+    """v1.7.33: 📋 近日出清面板数据（纯展示层）——近 max_days 个交易日（按数据内实际出场日取最近7个不同日）的全部出清结局；
+    (sym, day) 去重防触轨+G 同日碰撞；同日按收益升序（亏的先看）。返回 [{date,sym,reason,ret}] 按 date 新→旧"""
+    seen, by_day = set(), {}
+    for sym, cands in sym_cands.items():
+        for c in cands:
+            ed = c.get('exit_date')
+            if not ed or c.get('ret') is None: continue
+            key = (sym, c.get('day'))
+            if key in seen: continue
+            seen.add(key)
+            by_day.setdefault(ed, []).append((sym, c['reason'], float(c['ret'])))
+    if not by_day: return []
+    days = sorted(by_day, reverse=True)[:max_days]
+    out = []
+    for ed in days:
+        for sym, reason, ret in sorted(by_day[ed], key=lambda x: x[2]):
+            out.append({'date': ed, 'sym': sym, 'reason': reason, 'ret': ret})
+    return out
+
+
+def exits_panel_text(exits, max_rows=40):
+    """v1.7.33: 文本页面板行（纯展示）"""
+    if not exits: return ["📋 近日出清: 近 7 个交易日无出清"]
+    from collections import Counter
+    cnt = Counter(x['reason'] for x in exits)
+    head = (f"📋 近日出清（近7个交易日）: 共 {len(exits)} 笔（"
+            + " ".join(f"{REASON_SHORT[k]}{v}" for k, v in cnt.most_common()) + "）")
+    out = [head]
+    for x in exits[:max_rows]:
+        out.append(f"  {REASON_EMO.get(x['reason'], '·')} {x['sym']} {x['date'][5:]} {REASON_SHORT.get(x['reason'], x['reason'])} {x['ret']:+.1f}%")
+    if len(exits) > max_rows: out.append(f"  （仅显示最近 {max_rows} 笔）")
+    return out
+
+
 def esc(s):
     return html.escape(str(s))
 
@@ -676,7 +750,7 @@ def render_html(rows, closes, open_pos, st):
         # v1.7.29: 委托公共 state_advice——文本页/HTML/禁入分支三处文案零漂移（原内联双份维护）
         return state_advice(x, cd)
 
-    def card(g, sym, env, live, score, anchor, stop, dead, sd, tier, pct, lev, zone, day, note, tag='—', stop_eff='—', red_tag='', sig_note=''):    # v1.7.23: E4 增 sig_note——信号自带备注独立成行
+    def card(g, sym, env, live, score, anchor, stop, dead, sd, tier, pct, lev, zone, day, note, tag='—', stop_eff='—', red_tag='', sig_note='', fuse='—', badge='', agetag=''):    # v1.7.32: +agetag 卡龄标注（主信号标签同级，第一眼可见）
         gc = G_COLOR.get(g, G_COLOR['·'])
         env_html = f'<span class="env" style="color:{E_COLOR.get(env, "")}">⚡{env}共振</span>' if env else ''
         live_cls = 'grn' if (live or 0) >= 0 else 'red'
@@ -685,10 +759,12 @@ def render_html(rows, closes, open_pos, st):
     <b>{esc(sym)}</b> {env_html}
     <span class="live {live_cls}">{live:+.1f}%</span>
     <span class="score">评分 {score}</span></div>
+  {f'<div class="tag" style="color:#ff9f43">{esc(agetag)}</div>' if agetag else ''}
   <div class="grid">
     <div><i>锚 Entry</i><em>{anchor}</em></div>
     <div><i>止损 Stop</i><em class="red">{stop}</em></div>
-    <div><i>有效止损</i><em class="red">{stop_eff}</em></div>
+    <div><i>收盘止损线</i><em class="red">{stop_eff}</em></div>
+    <div><i>保险丝单</i><em class="red">{fuse}</em></div>
     <div><i>死锚出场</i><em class="grn">{dead}</em></div>
     <div><i>距止损</i><em class="red">-{sd}%</em></div>
     <div><i>仓位</i><em class="grn">{tier} {pct}%</em></div>
@@ -696,7 +772,7 @@ def render_html(rows, closes, open_pos, st):
     <div><i>信号区 Zone</i><em class="sm">{esc(zone)}</em></div>
     <div><i>{day[0]}</i><em>{day[1]}</em></div>
   </div>
-  <div class="note">{esc(note)}{('<br>' + esc(sig_note)) if sig_note else ''}</div>
+  <div class="note">{esc(note)}{('<br>' + esc(sig_note)) if sig_note else ''}{(f'<br><span style="color:#ff9f43">{esc(badge)}</span>') if badge else ''}</div>
 </div>'''
 
     sig_cards = []
@@ -717,7 +793,7 @@ def render_html(rows, closes, open_pos, st):
             note = advice_of(x, cd) + f"｜禁入（{x['grade']}|{lay}）{x.get('warn', '')}" + _sup
             jin_cards.append(card(x['grade'], sym, x.get('env', ''), live, score,
                                   anchor_s, f"{x['stop']:.2f}", dead_s(x), '—',
-                                  '—', '—', '—', zone_s(x), ('信号日', x['day']), note, tag_d, stop_eff=se, red_tag=rt,
+                                  '—', '—', '—', zone_s(x), ('信号日', x['day']), note, tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x),
                                   sig_note=x.get('note', '')))    # v1.7.23: E4 企稳备注独立成行
             continue
         if cd is None:
@@ -728,13 +804,13 @@ def render_html(rows, closes, open_pos, st):
                                       anchor_s, f"{x['stop']:.2f}", dead_s(x), f"{stop_dist0*100:.1f}",
                                       tier, '—', '—', zone_s(x), ('信号日', x['day']),
                                       f"⛔止损距离过宽({stop_dist0:.1%})，放弃该信号（同日候选缺失·按信号字段直算）" + _sup,
-                                      tag_d, stop_eff=se, red_tag=rt, sig_note=x.get('note', '')))
+                                      tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x), sig_note=x.get('note', '')))
                 continue
             sig_cards.append(card(x['grade'], sym, x.get('env', ''), live, score,
                                   anchor_s, f"{x['stop']:.2f}", dead_s(x), f"{stop_dist0*100:.1f}",
                                   tier, f"{notional0:g}", f"{lev0:g}", zone_s(x), ('信号日', x['day']),
                                   advice_of(x, None) + '（同日候选缺失·按信号字段直算）' + _sup,
-                                  tag_d, stop_eff=se, red_tag=rt, sig_note=x.get('note', '')))
+                                  tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x), sig_note=x.get('note', '')))
             continue
         base, risk = TIERS.get(tier, (3.0, 0.3))
         stop_dist = max(STOP_NEAR, (cd['anchor'] - cd['stop']) / cd['anchor'])
@@ -742,7 +818,7 @@ def render_html(rows, closes, open_pos, st):
             sig_cards.append(card(x['grade'], sym, x.get('env', ''), live, score,
                                   anchor_s, f"{cd['stop']:.2f}", dead_s(x), f"{stop_dist*100:.1f}",
                                   tier, '—', '—', zone_s(x), ('信号日', x['day']),
-                                  f"⛔止损距离过宽({stop_dist:.1%})，放弃该信号" + _sup, tag_d, stop_eff=se, red_tag=rt,
+                                  f"⛔止损距离过宽({stop_dist:.1%})，放弃该信号" + _sup, tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x),
                                   sig_note=x.get('note', '')))    # v1.7.23: E4 企稳备注独立成行
             continue
         notional = round(min(base, risk / stop_dist), 1)
@@ -756,7 +832,7 @@ def render_html(rows, closes, open_pos, st):
         sig_cards.append(card(x['grade'], sym, x.get('env', ''), live, score,
                               anchor_s, f"{cd['stop']:.2f}", dead_s(x), f"{stop_dist*100:.1f}",
                               tier, ('—' if x.get('brk_expire') else f"{notional:g}"), ('—' if x.get('brk_expire') else f"{lev:g}"), zone_s(x), ('信号日', x['day']),
-                              advice_of(x, cd) + _cross + _sup, tag_d, stop_eff=se, red_tag=rt,
+                              advice_of(x, cd) + _cross + _sup, tag_d, stop_eff=se, red_tag=rt, fuse=fuse_px(x), badge=zone_badge(x, lc), agetag=age_tag(x),
                               sig_note=x.get('note', '')))    # v1.7.23: E4 note 自内联拼接送入 sig_note 独立成行（原 advice+esc(note) 内联拼接）
 
     sig_by_sym = {sym: x for _, sym, x, _, _, _, _ in rows}
@@ -791,11 +867,28 @@ def render_html(rows, closes, open_pos, st):
 扛单口径回测（2025-04→今 · 5171信号 · 含资金费 · 幸存者0.7折并列）：追卡片现价短线无超额（+5日超额 −0.27%）；回踩锚位进场+扛到 到站/趋势终结/30天硬顶 均值 +4.05%（0.7折 +2.83%，验证期衰减至 +2.44%）——历史回测≠未来承诺，非投资建议<br>
 模拟仓: 在仓 {st["n_open"]} / 已平 {st["n_closed"]} ｜ 已平 {st["n_closed"]} 笔 · 胜率 {(st["win"]/st["n_closed"] if st["n_closed"] else 0):.0%} · 单笔均值 {st["avg"]:+.3f}% · 累计 {st["cum"]:+.2f}%（含资金费）{sample_note}<br>
 页面读法：⚠️置顶先处理（破位观察·风控优先）→ 主信号卡=唯一分级（评分含周一桶×1.3，标签≠推荐强度）→ 现价贴信号区=入场区、超锚太多=追高 → ✅到站默认走 → 🏁亮了挪仓 → 禁入沉底勿捡 ｜ 约束：总敞口≤50% · 单票≤15% · 同日≤3只 · 同行业≤2只 · 孤星日禁入 · 周六信号不入册<br>
+券商挂单: 只挂保险丝单=锚×0.8（盘中防崩，不参与常规止损） | 止损只看收盘: 收盘&lt;收盘止损线→次日开盘无条件出, 死区内（收盘止损线~止损）照常持有（每日04:40判定）<br>
 📌 每标的仅显示日期最新的一条信号；被顶掉信号的历史持仓收益已计入模拟账本</div>'''
 
     sim_html = chr(10).join(sim_cards)
     sig_html = chr(10).join(sig_cards + jin_cards)   # 禁入卡沉底
     shadow_html = f'<p class="note">{esc(st.get("shadow", ""))}</p>' if st.get('shadow') else ''    # v1.7.23: E6 影子观察行（页脚免责上一行，空则略去）
+    _ex = st.get('recent_exits') or []    # v1.7.33: 📋 近日出清面板（纯展示）
+    if _ex:
+        from collections import Counter as _C
+        _cnt = _C(x['reason'] for x in _ex)
+        _ex_rows = "".join(
+            f'<div style="display:flex;gap:8px;font-size:13px;line-height:1.9">'
+            f'<span style="width:18px">{REASON_EMO.get(x["reason"], "·")}</span>'
+            f'<b style="min-width:96px">{esc(x["sym"])}</b>'
+            f'<span style="color:#7c869c;width:44px">{esc(x["date"][5:])}</span>'
+            f'<span style="width:72px">{REASON_SHORT.get(x["reason"], esc(x["reason"]))}</span>'
+            f'<span class="{REASON_CLS.get(x["reason"], "")}" style="margin-left:auto;font-weight:700">{x["ret"]:+.1f}%</span></div>'
+            for x in _ex[:40])
+        _ex_tail = f'<div style="color:#7c869c;font-size:12px;margin-top:6px">仅显示最近 40 笔</div>' if len(_ex) > 40 else ''
+        exits_html = (f'<h2>📋 近日出清（近7个交易日·共 {len(_ex)} 笔）</h2><div class="card">{_ex_rows}{_ex_tail}</div>')
+    else:
+        exits_html = '<h2>📋 近日出清</h2><div class="card" style="color:#7c869c">近 7 个交易日无出清</div>'
     return f'''<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>丁导K线交易系统</title>
@@ -824,6 +917,7 @@ h2{{font-size:16px;margin:20px 0 10px}}
 <h2>💼 模拟账户（在仓 {st["n_open"]}）</h2><div class="grid2">{sim_html}</div>
 <h2>📋 在册信号（{len(sig_cards)}）</h2><div class="grid2">{sig_html}</div>
 {shadow_html}
+{exits_html}
 <p class="note">⚠️ 以上为历史统计规则输出，非投资建议；仓位与杠杆自定，极端行情下任何止损价都可能被跳空击穿。模拟成交假设 T+1 开盘价、无滑点与流动性约束；展示口径与模拟口径不同，模拟仓更保守。</p>
 </div></body></html>'''
 
@@ -1002,13 +1096,27 @@ def main() -> int:
     rows = []
     for sym in sorted(hit):
         x = hit[sym]
-        if x['grade'] == '·' and not x['warn']: continue
+        # v1.7.31(b): 「·」级无警示卡暂不在此过滤——若顶替了存活旧卡（血缘段判 held_old）则沉底保留
+        #（用户拍板方案A，ORCL 案例：旧卡 10-09 活卡被 · 级新卡顶替+新卡被过滤=整页消失）；无存活旧卡的仍隐藏（下方剔除）。
         cands = sym_cands.get(sym) or []
         cd = next((cc for cc in cands if cc['day'] == x['day']), None)
         lay = layer_prev(x['day'])
         tier = tier_of(x['grade'], lay, x['env'])
         score = score_of(x['grade'], lay, x['env'], x['day'], mon_clean=x.get('mon_clean', False))    # v1.7.23: E1 传周一干净桶旗标
         rows.append((rank.get('⚠️' if x['warn'] else x['grade'], 9), sym, x, cd, lay, tier, score))
+    # v1.7.31(a): 期满红旗升权（用户拍板 2026-10-14「提升期满的权重新信号给他让路带一天」）——
+    # 被新信号顶替的 brk_expire 卡同屏展示一天（归🏁出清组沉底，不占⚠️位）；
+    # 期满次日引擎 lag≥4 自动出清，恢复正常「每标的仅最新一条」顶替。纯展示层。
+    for sym, sbd in sig_by_days.items():
+        x_cur = hit.get(sym)
+        for _d, _x in sbd.items():
+            if _x.get('brk_expire') and not (x_cur and x_cur.get('day') == _d):
+                _cands = sym_cands.get(sym) or []
+                _cd = next((cc for cc in _cands if cc['day'] == _d), None)
+                _lay = layer_prev(_d)
+                rows.append((rank.get(_x['grade'], 9), sym, _x, _cd, _lay,
+                             tier_of(_x['grade'], _lay, _x.get('env', '')),
+                             score_of(_x['grade'], _lay, _x.get('env', ''), _x['day'], mon_clean=_x.get('mon_clean', False))))
     rows.sort(key=lambda r: row_sort_key(r, closes))    # v1.7.23: E2 多键排序锁死（⚠️置顶→状态分组→评分→盈亏比→新鲜度→字母序）
     # v1.7.29(b): 顶替明示——展示信号顶替同标旧候选时附旧卡纪律位摘要（用户 10-14 指出跟单视图纪律位丢失）
     # 大师团 5 票裁定：旧卡血缘必须结构化可读（锚/止损/状态/浮盈%/距到站%），旧卡在仓时新卡语义降级+非加仓防火墙
@@ -1041,9 +1149,14 @@ def main() -> int:
                 _dz = f"·距到站{(_dp/_lc-1)*100:+.1f}%" if _dp and _lc else ''
                 _o_state = '持有中' + (f"·{_pl}" if _pl else '') + _dz
                 _x['held_old'] = True   # 旧卡在仓 → 用户可能仍持有，新卡动词降级为在册监控（德鲁肯米勒裁决：旧仓存活期禁出加仓暗示）
-            _x['supersede'] = (f"顶替 {_o['day'][5:]} 旧卡：锚{_o_anchor:.2f}/止损{_o_stop:.2f}"
+            _of = f"{_o_anchor*0.8:.2f}" if _o_anchor < 1000 else f"{_o_anchor*0.8:.1f}"   # v1.7.31: 位数随锚（审计🟡）
+            _x['supersede'] = (f"顶替 {_o['day'][5:]} 旧卡：锚{_o_anchor:.2f}/止损{_o_stop:.2f}/保险丝{_of}"
                                + (f"·{_o_state}" if _o_state else '')
                                + "｜展示位替换≠加仓指令，旧仓按原纪律管理")
+    # v1.7.31(b): 「·」级无警示卡剔除规则（恢复旧隐藏语义，豁免=顶替存活旧卡 held_old）——
+    # 方案A（用户拍板 2026-10-14）：ORCL 式缝隙修复，沉底展示带血缘，与禁入沉底先例同构。纯展示层。
+    rows = [r for r in rows if not (r[2]['grade'] == '·' and not r[2]['warn'] and not r[2].get('held_old'))]
+    rows.sort(key=lambda r: row_sort_key(r, closes))    # v1.7.31(b): 剔除后重排（血缘 supersede/held_old 已就位）
 
     tz8 = timezone(timedelta(hours=8))
     up_ts = datetime.now(tz8).strftime('%Y-%m-%d %H:%M')
@@ -1060,6 +1173,7 @@ def main() -> int:
              f"规则全历史战绩（诚实口径）: {hist_n} 笔 | 胜率 {hist_win:.0f}% | 均值 {hist_avg:+.2f}% | 中位 {hist_med:+.2f}%（在册卡溢价为幸存者快照）",
              f"扛单口径回测: 追现价短线无超额(+5日 -0.27%) | 回踩锚位进场+扛单(到站/趋势终结/30天硬顶) 均值 +4.05% (0.7折 +2.83%, 验证期 +2.44%, 含资金费) (2025-04→今 5171信号, 历史回测≠未来承诺)",
              "页面读法：⚠️置顶先处理（破位观察·风控优先）→ 主信号卡=唯一分级（评分含周一桶×1.3，标签≠推荐强度）→ 现价贴信号区=入场区、超锚太多=追高 → ✅到站默认走 → 🏁亮了挪仓 → 禁入沉底勿捡",    # v1.7.23: E5 读法文案更新
+             "券商挂单: 只挂保险丝单=锚×0.8(盘中防崩, 不参与常规止损) | 止损只看收盘: 收盘<收盘止损线→次日开盘无条件出, 死区内(收盘止损线~止损)照常持有(每日04:40判定)",    # v1.7.31: 交易分析团队终裁挂单转换规则
              "约束：总敞口≤50% | 单票≤15% | 同日≤3只 | 同行业≤2只 | 孤星日禁入 | 周六信号不入册",
              "📌 每标的仅显示日期最新的一条信号；被顶掉信号的历史持仓收益已计入下方模拟账本",
              "=" * 46]
@@ -1080,8 +1194,10 @@ def main() -> int:
         price_s = f"{x['anchor']:.2f}" if x['anchor'] < 1000 else f"{x['anchor']:.1f}"
         _verb = '在册监控' if x.get('held_old') else '买入'   # v1.7.29: 旧卡在仓时新卡动词降级（德鲁肯米勒：旧仓存活期禁出加仓暗示）
         _sup = f"｜{x['supersede']}" if x.get('supersede') else ''   # v1.7.29: 顶替血缘（旧卡日/锚/止损/状态/浮盈%/距到站%+非加仓防火墙）
-        lines.append(f"{('🚫周日·降权0.5·复评中 ' if x.get('sun_half') else '')}{('⛔真破位·期满已离场 ' if x.get('brk_expire') else '')}{('⚠️' if x['warn'] else tag_of(x))} {sym} {_verb} {x['day']} 锚{price_s} "
-                     f"支撑阻力区{x['zone']} 有效止损{x.get('stop_eff', '—')} CCI{x['cci']:.0f}{x['warn']}{x.get('note', '')}{x.get('haos', '')}"
+        _lc = closes.get(sym, 0)
+        _zb = zone_badge(x, _lc)
+        lines.append(f"{('🚫周日·降权0.5·复评中 ' if x.get('sun_half') else '')}{('⛔真破位·期满已离场 ' if x.get('brk_expire') else '')}{('⚠️' if x['warn'] else tag_of(x))} {(age_tag(x) + ' ') if age_tag(x) else ''}{sym} {_verb} {x['day']} 锚{price_s} "
+                     f"支撑阻力区{x['zone']} 收盘止损线{x.get('stop_eff', '—')}{_zb} 保险丝{fuse_px(x)}(锚×0.8) CCI{x['cci']:.0f}{x['warn']}{x.get('note', '')}{x.get('haos', '')}"
                      f"{x.get('dead', '')}{x.get('flag', '')}{_sup}")
         if tier == '禁入':
             # v1.7.29: P0 止血——禁入是附加状态不是替换状态：advice 只追加不覆盖（TEM 案例：破位观察期止损位被孤星禁入标注整块吞掉）
@@ -1114,6 +1230,8 @@ def main() -> int:
                      f"止损{cd['stop']:.2f}(收盘确认,距锚{stop_dist:.1%}) | {advice}")
     if not rows:
         lines.append("（当前无在册信号）")
+    _recent_exits = collect_recent_exits(sym_cands)   # v1.7.33: 📋 近日出清面板（纯展示，页面尾部；计算一次双通道复用）
+    lines.extend(exits_panel_text(_recent_exits))
     lines.append(f"拦截统计: " + " ".join(f"{k}{v}" for k, v in skip_n.most_common()) if skip_n else "")
     text = "\n".join(lines) + "\n"
     text += ("\n⚠️ 以上为历史统计规则输出，非投资建议；仓位与杠杆自定，极端行情下任何止损价都可能被跳空击穿。\n"
@@ -1127,6 +1245,7 @@ def main() -> int:
         'hist_n': hist_n, 'hist_win': hist_win, 'hist_avg': hist_avg, 'hist_med': hist_med,
         'n_open': len(open_pos), 'n_closed': len(closed),
         'shadow': shadow_line,    # v1.7.23: E6 影子观察统计行送 HTML 页脚
+        'recent_exits': _recent_exits,    # v1.7.33: 📋 近日出清面板数据（纯展示，复用文本页同一次计算）
         'win': win if closed else 0, 'avg': float(np.mean(realized)) if realized else 0.0,
         'cum': cum,
         'skip_by_sym': {k: {'n': len(v), 'last': max(d for d, _ in v),
