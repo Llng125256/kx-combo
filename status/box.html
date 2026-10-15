@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📦 箱体引擎 · 丁导K线交易系统</title>
+<style>
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,sans-serif;margin:0;padding:16px}
+h1{font-size:20px} a{color:#58a6ff;text-decoration:none}
+.meta{color:#8b949e;font-size:12px;margin-bottom:12px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px;margin:8px 0;font-size:14px}
+.hold{border-left:4px solid #f59e0b}.lock{border-left:4px solid #30363d}
+.tk{font-weight:bold;font-size:16px}
+.buy{color:#ff2d2d;font-weight:bold}.sell{color:#16a34a;font-weight:bold}
+.line{color:#8b949e;font-size:12px;margin-top:4px}
+.stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{border-bottom:1px solid #21262d;padding:4px 6px;text-align:left}
+.up{color:#ff2d2d}.dn{color:#16a34a}
+.sbar{position:relative;height:22px;background:#21262d;border-radius:4px;margin-top:6px}
+.sfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#16a34a55,#f59e0b55)}
+.sline{position:absolute;top:2px;font-size:10px;padding:0 4px}
+.sline.stop{left:0;color:#8b949e}.sline.trg{right:0;color:#f59e0b}
+</style></head><body>
+<h1>📦 箱体引擎 <a href="view.html" style="float:right;font-size:14px">← 返回主引擎</a></h1>
+<div class="meta" id="meta">加载中…</div>
+<div id="cards"></div>
+<div class="stat"><b>近30日已平交易</b><div id="stat" class="line"></div>
+<table id="hist"></table></div>
+<script>
+fetch('box-live.txt?ts='+Date.now()).then(r=>r.json()).then(d=>{
+document.getElementById('meta').textContent='生成于 '+d.generated+' · 版本 '+d.version+
+' · 参数 N='+d.params.N+' k='+d.params.k+' · 牛市闸='+d.params.bull_gate;
+const cs=document.getElementById('cards');
+(d.cards||[]).forEach(c=>{
+  const el=document.createElement('div');
+  if(c.mode==='持仓中'){
+    el.className='card hold';
+    el.innerHTML='<span class="tk">'+c.tkr+'</span> <span class="buy">['+(c.kind==='bk'?'突破持仓':'回归持仓')+']</span> '+c.mode+
+    '<div class="line">买入 '+c.ep+' → 止盈 '+c.tp+' | 显示止损 '+c.disp+' | 有效止损 '+c.eff+
+    ' | 已持 '+c.days+' 天 | 现价 '+c.last+'</div>';
+  }else{
+    el.className='card lock';
+    const pct=Math.max(0,Math.min(100,(c.pos_in_box||0.5)*100));
+    const near=(c.dist!==undefined&&c.dist<=1.5);
+    el.innerHTML='<span class="tk">'+c.tkr+'</span> '+c.mode+(near?' <span class="buy">⚡接近触发('+c.dist+'%)</span>':'')+
+    '<div class="sbar"><div class="sfill" style="width:'+pct+'%"></div>'+
+    '<span class="sline stop">箱底 '+c.bot+'</span><span class="sline trg">触发 '+c.trig+'</span></div>'+
+    '<div class="line">箱顶 '+c.top+' / 箱底 '+c.bot+' | 箱龄 '+c.age+' 天 | 现价 '+c.last+
+    ' | 距突破触发 <b>'+c.dist+'%</b>（收盘判定，盘中触摸≠买入）</div>';
+  }
+  cs.appendChild(el);
+});
+const s=d.stats||{};
+document.getElementById('stat').textContent='共 '+s.total+' 笔 · 胜 '+s.wins+' 笔 · 单笔均值 '+s.mean+'%（含资金费，收盘判定口径）';
+const tb=document.getElementById('hist');
+tb.innerHTML='<tr><th>标的</th><th>买</th><th>卖</th><th>收益</th><th>原因</th><th>日期</th></tr>';
+(d.recent||[]).forEach(h=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+h.tkr+'</td><td class="buy">'+h.ep+'</td><td class="sell">'+h.xc+'</td>'+
+  '<td class="'+(h.r>0?'up':'dn')+'">'+(h.r>0?'+':'')+h.r+'%</td><td>'+h.why+'</td><td>'+h.xt+'</td>';
+  tb.appendChild(tr);
+});
+}).catch(e=>{document.getElementById('meta').textContent='数据加载失败：'+e});
+</script></body></html>
