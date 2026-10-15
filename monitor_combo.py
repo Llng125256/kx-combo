@@ -10,6 +10,10 @@
   扫描范围 = 主监控标的池（EQUITY）+ 主监控排除名单同样跳过。
   满足即推（重复的标也推），消息只带 标的名称 + 组合信号名。
 
+  【v2.1 2026-10-10 用户拍板】砍掉 AI 共振分析（--out-json 全链路移除），
+  只保留原基础推送：命中/消失消息由程序直推企微 webhook（KX_WECHAT_WEBHOOK）；
+  ntfy 仍负责 state 与 push-log 落盘。
+
 机制（combo-v1.1，2026-09-22 用户拍板口径）：
   · limit=300 日线扫描（用户指定口径）
   · 防抖冻结：只冻结 Lucy —— 冻结只到「信号所在日K收盘」，收盘后直接裁定
@@ -28,6 +32,8 @@ from __future__ import annotations
 
 import json
 import logging
+
+__version__ = "2.1"   # 包代码版本自证（v2.1：砍掉 AI 共振分析，只保留原基础推送）
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -199,7 +205,8 @@ def scan_all(cli: KxClient, pool: list[str], cfg: dict) -> list[dict]:
         try:
             d = cli.get_kline(sym, "futures", "1d", limit)
             if not (d.get("bars") or []):
-                return {"sym": sym, "ok": False, "lucy": None, "haos": None, "haos_w": None}
+                return {"sym": sym, "ok": False, "lucy": None, "haos": None,
+                        "haos_w": None}
             now = time.time()
             return {"sym": sym, "ok": True,
                     "lucy": extract_lucy(d, now, win),
@@ -207,7 +214,8 @@ def scan_all(cli: KxClient, pool: list[str], cfg: dict) -> list[dict]:
                     "haos_w": latest_date((d.get("haos") or {}).get("weak_buy"))}
         except Exception as e:  # noqa: BLE001
             log.warning("拉取 %s 失败: %s", sym, e)
-            return {"sym": sym, "ok": False, "lucy": None, "haos": None, "haos_w": None}
+            return {"sym": sym, "ok": False, "lucy": None, "haos": None,
+                    "haos_w": None}
 
     with ThreadPoolExecutor(int(cfg["watch"].get("scan_workers", 16))) as ex:
         return list(ex.map(one, pool))
@@ -298,7 +306,7 @@ def run_state_machine(results: list[dict], st: dict, now: float,
                     continue
             combo = judge_combo(r["lucy"], r["haos"], r.get("haos_w"), now, w)
             if combo:
-                hits.append((sym, combo, r["lucy"]))  # 在册且满足 → 每轮都推（v1.8 带 Lucy 日期）
+                hits.append((sym, combo, r["lucy"]))
         elif sym in raw:
             # 1→0 消失 → 冻到当根收盘，收盘后直接裁定（v1.1 用户口径）
             fz[sym] = {"pd": confirm_at_1d(now), "cr": 1, "r": 0, "born": now}
@@ -342,8 +350,9 @@ def push_log_ntfy(cfg: dict, hits: list, gone: list, ok_n: int, pool_n: int) -> 
     """【v1.2】推送记录落盘（title=kx-combo-push-log），事后可回查推了什么。"""
     try:
         body = json.dumps(
-            {"v": 1, "ts": int(time.time()), "ok": ok_n, "pool": pool_n,
-             "hits": [s for s, _, _ in hits], "combos": {s: c for s, c, _ in hits},
+            {"v": 2, "ts": int(time.time()), "ok": ok_n, "pool": pool_n,
+             "hits": [s for s, _, _ in hits],
+             "combos": {s: c for s, c, _ in hits},
              "gone": gone}, ensure_ascii=False, separators=(",", ":"))
         requests.post(f"https://ntfy.sh/{cfg['ntfy']['channel']}", data=body,
                       headers={"Title": cfg["ntfy"]["pushlog_title"], "Tags": "memo"},
@@ -356,6 +365,7 @@ def push_log_ntfy(cfg: dict, hits: list, gone: list, ok_n: int, pool_n: int) -> 
 def main() -> int:
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")
+    print(f"[combo] 包代码版本 v{__version__}")
     dry = "--dry" in sys.argv
     cfg = yaml.safe_load(open("config.yaml", encoding="utf-8"))
     cli = KxClient(signal_age_days=cfg["watch"]["max_signal_age_days"])
