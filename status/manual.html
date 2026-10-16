@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K线复刻监控 · 页面使用说明 v1.7.43</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --text: #c9d1d9;
+    --accent: #58a6ff;
+    --border: #30363d;
+    --muted: #8b949e;
+    --code-bg: #161b22;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 40px 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 8px;
+  }
+  h1 {
+    color: var(--accent);
+    font-size: 1.7em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-top: 0;
+  }
+  h2 {
+    color: var(--accent);
+    font-size: 1.3em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-top: 2em;
+  }
+  a { color: var(--accent); }
+  blockquote {
+    margin: 1em 0;
+    padding: 8px 16px;
+    border-left: 4px solid var(--accent);
+    background: var(--code-bg);
+    color: var(--muted);
+  }
+  blockquote p { margin: 6px 0; }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, "Courier New", monospace;
+    font-size: 0.9em;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    display: block;
+    overflow-x: auto;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--code-bg);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  tr:nth-child(2n) { background: rgba(177, 186, 196, 0.04); }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2em 0;
+  }
+  .meta-date {
+    color: var(--muted);
+    font-size: 0.85em;
+    text-align: right;
+    margin-top: 3em;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  ol, ul { padding-left: 1.6em; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>K线复刻监控 · 页面使用说明（v1.7.43 版）</h1>
+
+<blockquote>
+<p>更新：2026-10-16 ｜ 对应引擎 v1.7.43 ｜ 本版经污染血统审计（8/8 项）+ 交易分析团队三席终裁 + 用户验收</p>
+<p>一句话版本：<strong>触下轨即信号、仓位一律 6%、破位有 2 天观察期、保险丝盘中保命、利润靠右尾。</strong></p>
+</blockquote>
+
+<hr>
+
+<h2>一、信号定义</h2>
+
+<ul>
+<li>信号成立 = 盘中触及 <strong>EMA10−ATR14 下轨</strong>（日线级别）</li>
+<li>入场确认 = 北京 <strong>08:00 完整日K落定</strong>（UTC 日切），<strong>08:35 轮</strong>复核——进行中 bar 不参与任何判定（forming bar 隔离）</li>
+<li><strong>已废除勿再引用</strong>：收盘位＞0.3 过滤（v1.7.41 废）、下影＞40% 主信号（v1.7.42 废，系交互伪象）、🥈主信号分级（v1.7.42 废）</li>
+<li>全信号统一 ·级 ×1.0；评分 = 1.0 × 市况层（批量日 1.2 / 常规 1.0 / 周日 ×0.5）</li>
+<li>周一桶加成暂停、环境乘子封存——⚡标签仅展示参考，不影响评分</li>
+</ul>
+
+<h2>二、仓位与风控（五条硬限）</h2>
+
+<p><strong>仓位单档 6%</strong>（旧 3%/6%/8% 三档已废）。</p>
+
+<table>
+<thead>
+<tr><th>硬限</th><th>数值</th></tr>
+</thead>
+<tbody>
+<tr><td>并发持仓</td><td>≤8 只</td></tr>
+<tr><td>单票名义</td><td>≤10%</td></tr>
+<tr><td>总敞口</td><td>≤50%</td></tr>
+<tr><td>杠杆</td><td>= 风险预算 ÷ 止损距离，≤5×（永不放宽）</td></tr>
+<tr><td>止损距离</td><td>＞8% 放弃入场</td></tr>
+</tbody>
+</table>
+
+<p>超限截断不递补。行业分散暂缓（无行业数据源）。</p>
+
+<h2>三、禁入三查（买入前必查）</h2>
+
+<ol>
+<li><strong>只买新卡</strong>：同一标的距上一信号 ≤3 个交易日才算新卡</li>
+<li><strong>孤星日禁入</strong>：全池当日信号 ≤2 的日子不开新仓</li>
+<li><strong>批量日新卡多被禁入沉底</strong>：页面标注「禁入沉底勿捡」</li>
+</ol>
+
+<h2>四、破位机（重点：两条轴，别混）</h2>
+
+<ul>
+<li>破位确认 = 收盘跌破<strong>有效止损</strong>（显示止损 −0.3×ATR 死区）且过三确认（爆量 3× / 收盘瘫脚 / CCI≤−100 任一）→ 进 ⚠️ <strong>2 日观察期</strong></li>
+<li>观察期内任一收盘<strong>收上信号区上沿 → 复活撤警</strong></li>
+<li>期满未收复 → <strong>次日开盘无条件卖出</strong></li>
+</ul>
+
+<p>三个要点：</p>
+
+<ol>
+<li><strong>复活线（信号区上沿）与止损线是两条轴</strong>——收回止损线上方 ≠ 解除警报</li>
+<li><strong>券商挂单价（盘中触发）不参与判定</strong>，判定只认 08:00 完整日K收盘——止损别挂盘中触发单，08:00 定盘后人工执行</li>
+<li>观察期内<strong>不补仓、不摊平</strong></li>
+</ol>
+
+<h2>五、主流程五步（远标 → 买入 → 持有 → 各状态）</h2>
+
+<ol>
+<li><strong>远标</strong>：每天 08:35 轮后看页面——⚠️置顶风控区（限 3 张）最优先，再看 🆕新卡与常规信号卡；卡龄标注 🆕(0-1日) / 卡龄N天(2-4) / ⏳老卡(≥5) 辅助判断</li>
+<li><strong>信号判定</strong>：收盘触下轨即成立，次日开盘为理论锚价 Entry</li>
+<li><strong>买入</strong>：按 6% 建仓，过五条风控硬限与禁入三查，任一不符即放弃；现价超锚太多 = 追高慎重</li>
+<li><strong>持有</strong>：挂券商保险丝死单（锚×0.8），每日收盘判定，无状态不操作</li>
+<li><strong>按状态操作</strong>（见第六章）</li>
+</ol>
+
+<h2>六、出场系统与各状态操作</h2>
+
+<table>
+<thead>
+<tr><th>状态</th><th>含义</th><th>你的动作</th></tr>
+</thead>
+<tbody>
+<tr><td>✅ 死锚到站</td><td>盘中触及死锚出场价（信号日 EMA10+ATR14）</td><td>台账规则：先平 30% 锁利，剩余 70% 博 🏁 或 30 天硬顶（引擎默认：到站默认走，趋势健在可留 + 止损上移至锚保本——两种口径自选其一并固定）</td></tr>
+<tr><td>🏁 趋势终结</td><td>连续 2 日收盘小于 EMA10</td><td>清仓挪仓</td></tr>
+<tr><td>⏹ 硬顶</td><td>持仓满 30 天强制清退</td><td>第 27 天亮 ⏳硬顶将至，提前有数</td></tr>
+<tr><td>⚖️ 保本</td><td>止损上移至锚价后回踩触发</td><td>按纪律出</td></tr>
+<tr><td>⛔ 保险丝</td><td>盘中触及锚×0.8 即走</td><td><strong>保命单，挂死不动</strong>——它是保护，不是盈利工具</td></tr>
+<tr><td>⚠️ 观察期</td><td>破位确认后 2 天</td><td>等，勿动，不补仓</td></tr>
+<tr><td>📊 复活卡</td><td>观察期收复回册</td><td>自动打标累计（统计追踪·非决策依据），样本＜30 不出结论</td></tr>
+</tbody>
+</table>
+
+<h2>七、面板导读</h2>
+
+<ul>
+<li><strong>主列表</strong>：⚠️置顶风控区（限 3 张）→ 🏁/✅ 结局组 → 常规卡</li>
+<li><strong>⛔保险丝结局卡已下架主列表</strong>，只进 📋出清面板（近 7 日动态全量、⚡保险丝醒目标记、当日/累计计数、最近一单摘要）</li>
+<li><strong>独立箱体页 box.html</strong>：防守型独立工具（15/20 日锁箱→突破/回归买入），与主引擎零接触，页首挂诚实声明</li>
+<li>数据时点：完整日K北京 08:00 落定、08:35 轮更新页面——04:40 旧时点作废</li>
+</ul>
+
+<h2>八、诚实声明（七条）</h2>
+
+<ol>
+<li>不保收益</li>
+<li>规则全公开无暗箱，本说明书与引擎同步</li>
+<li>历史复刻≠未来，历史回测含幸存者偏差（池=当前存续票）</li>
+<li>真实代币时段（2025-06 起）样本仅 4.5 个月且无熊市样本</li>
+<li>这是右偏趋势跟随系统：约 46% 交易被止损是数学必然、中位数为负、利润靠 top5% 右尾——用零散小亏换大趋势</li>
+<li>判定有时滞（完整K 08:00 落定）</li>
+<li>失败案例全公开（📋出清面板六类结局全展示）</li>
+</ol>
+
+<h2>附：旧版处置</h2>
+
+<p>v1.7.31 及更早版本与本版冲突的段落（🥈主信号、下影形态、评分2.4、轻3%/中6%多档仓位、单票≤15%、同行业≤2）<strong>全部作废</strong>，存档于资料库源文档附录备查，请勿按旧法操作。</p>
+
+<p class="meta-date">更新日期：2026-10-16</p>
+</div>
+</body>
+</html>
